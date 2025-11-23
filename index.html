@@ -29,6 +29,7 @@
             text-align: center;
             padding: 20px;
             width: 100%;
+            display: block;
         }
 
         .start-title {
@@ -49,10 +50,15 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
             font-weight: bold;
             border: 3px solid #FFFFFF;
+            transition: transform 0.2s;
         }
 
         .start-button:hover {
             transform: scale(1.05);
+        }
+
+        .start-button:active {
+            transform: scale(0.95);
         }
 
         .footer {
@@ -195,7 +201,7 @@
             margin-top: 15px;
         }
 
-        button {
+        .control-button {
             background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
             border: none;
@@ -203,6 +209,11 @@
             border-radius: 20px;
             font-size: 0.8rem;
             cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .control-button:active {
+            transform: scale(0.95);
         }
 
         @keyframes pulse {
@@ -212,12 +223,6 @@
             50% { 
                 box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
             }
-        }
-
-        @keyframes highlight {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
         }
     </style>
 </head>
@@ -263,14 +268,14 @@
         </div>
 
         <div class="controls">
-            <button onclick="showHint()">İpucu</button>
-            <button onclick="resetGame()">Yenile</button>
-            <button onclick="backToMenu()">Menü</button>
+            <button class="control-button" id="hintButton">İpucu</button>
+            <button class="control-button" id="resetButton">Yenile</button>
+            <button class="control-button" id="menuButton">Menü</button>
         </div>
     </div>
 
     <script>
-        // TAM OYUN KODU - TÜM SORUNLAR ÇÖZÜLDÜ
+        // === OYUN KODU - BUTONLAR KESİN ÇALIŞACAK ===
         console.log("=== 3D BLOCKS OYUNU YÜKLENİYOR ===");
 
         // OYUN AYARLARI
@@ -290,34 +295,46 @@
             isDragging: false,
             lastX: 0,
             lastY: 0,
-            cubeData: {} // Her mini küpün hayvan bilgisini saklayacağız
+            cubeData: {}
         };
 
-        // === BUTON KESİN ÇALIŞTIRMA ===
-        function initializeButton() {
-            console.log("🔧 Buton hazırlanıyor...");
+        // === TÜM BUTONLARI BAŞLAT ===
+        function initializeAllButtons() {
+            console.log("🔧 Tüm butonlar hazırlanıyor...");
             
+            // BAŞLAT BUTONU
             const startButton = document.getElementById('startButton');
-            
-            if (!startButton) {
-                console.error("❌ Buton bulunamadı!");
-                return;
+            if (startButton) {
+                startButton.addEventListener('click', startGame);
+                startButton.style.border = "3px solid #00FF00";
+                console.log("✅ Başlat butonu hazır");
             }
             
-            console.log("✅ Buton bulundu:", startButton);
+            // İPUCU BUTONU
+            const hintButton = document.getElementById('hintButton');
+            if (hintButton) {
+                hintButton.addEventListener('click', showHint);
+                console.log("✅ İpucu butonu hazır");
+            }
             
-            startButton.addEventListener('click', function() {
-                console.log("🎮 BUTON TIKLANDI");
-                startGame();
-            });
+            // YENİLE BUTONU
+            const resetButton = document.getElementById('resetButton');
+            if (resetButton) {
+                resetButton.addEventListener('click', resetGame);
+                console.log("✅ Yenile butonu hazır");
+            }
             
-            startButton.style.border = "3px solid #00FF00";
-            console.log("✅ Buton hazır! Yeşil border eklendi.");
+            // MENÜ BUTONU
+            const menuButton = document.getElementById('menuButton');
+            if (menuButton) {
+                menuButton.addEventListener('click', backToMenu);
+                console.log("✅ Menü butonu hazır");
+            }
         }
 
         // OYUNU BAŞLAT
         function startGame() {
-            console.log("🚀 OYUN BAŞLATILIYOR...");
+            console.log("🎮 OYUN BAŞLAT BUTONU TIKLANDI!");
             
             // Ekranları değiştir
             document.getElementById('startScreen').style.display = 'none';
@@ -328,6 +345,7 @@
         }
 
         function backToMenu() {
+            console.log("🏠 Menüye dönülüyor...");
             document.getElementById('gameScreen').style.display = 'none';
             document.getElementById('startScreen').style.display = 'block';
         }
@@ -336,7 +354,9 @@
             console.log("🔄 Oyun hazırlanıyor...");
             
             const mainCube = document.getElementById('mainCube');
-            mainCube.innerHTML = '';
+            if (mainCube) {
+                mainCube.innerHTML = '';
+            }
             
             // Oyun durumunu sıfırla
             gameState.score = 0;
@@ -359,6 +379,10 @@
 
         function create3DCube() {
             const mainCube = document.getElementById('mainCube');
+            if (!mainCube) {
+                console.error("❌ mainCube elementi bulunamadı!");
+                return;
+            }
             
             // Önce 9 mini küp için hayvanları belirle
             const miniCubeAnimals = [];
@@ -402,7 +426,7 @@
                     cell.dataset.miniCubeId = i; // Mini küp ID'si
                     cell.dataset.face = face;
                     
-                    // TIKLAMA OLAYI - stopPropagation kaldırıldı
+                    // TIKLAMA OLAYI
                     cell.addEventListener('click', function() {
                         console.log("🎯 Küp tıklandı:", this.dataset.animal, "MiniCube ID:", this.dataset.miniCubeId);
                         selectCube(this);
@@ -469,7 +493,7 @@
                     gameState.cubeData[firstSelection.miniCubeId].matched = true;
                     gameState.cubeData[miniCubeId].matched = true;
                     
-                    // Her iki mini küpün tüm yüzeylerini kaybet
+                    // Her iki mini küpün tüm yüzlerini kaybet
                     hideMatchedMiniCube(firstSelection.miniCubeId);
                     hideMatchedMiniCube(miniCubeId);
                     
@@ -521,6 +545,7 @@
 
         function setupDragControls() {
             const gameContainer = document.getElementById('gameContainer');
+            if (!gameContainer) return;
             
             gameContainer.addEventListener('mousedown', startDrag);
             gameContainer.addEventListener('touchstart', startDrag);
@@ -563,8 +588,10 @@
 
         function updateCubeRotation() {
             const mainCube = document.getElementById('mainCube');
-            mainCube.style.transform = 
-                `rotateX(${gameState.currentRotation.x}deg) rotateY(${gameState.currentRotation.y}deg)`;
+            if (mainCube) {
+                mainCube.style.transform = 
+                    `rotateX(${gameState.currentRotation.x}deg) rotateY(${gameState.currentRotation.y}deg)`;
+            }
         }
 
         function enableAllCubes() {
@@ -577,6 +604,7 @@
         }
 
         function showHint() {
+            console.log("💡 İpucu butonuna tıklandı");
             const unmatchedCubes = [];
             
             // Eşleşmemiş mini küpleri bul
@@ -600,11 +628,47 @@
         }
 
         function resetGame() {
+            console.log("🔄 Oyun yeniden başlatılıyor");
             initializeGame();
         }
 
         function updateUI() {
-            document.getElementById('score').textContent = gameState.score;
-            document.getElementById('moves').textContent = gameState.moves;
-            document.getElementById('matches').textContent = gameState.matches;
-            document.getEle
+            const scoreElement = document.getElementById('score');
+            const movesElement = document.getElementById('moves');
+            const matchesElement = document.getElementById('matches');
+            const remainingPairsElement = document.getElementById('remainingPairs');
+            
+            if (scoreElement) scoreElement.textContent = gameState.score;
+            if (movesElement) movesElement.textContent = gameState.moves;
+            if (matchesElement) matchesElement.textContent = gameState.matches;
+            if (remainingPairsElement) remainingPairsElement.textContent = gameState.remainingPairs;
+        }
+
+        // === SAYFA YÜKLENDİĞİNDE KESİN ÇALIŞTIR ===
+        window.addEventListener('load', function() {
+            console.log("✅ Sayfa tamamen yüklendi!");
+            initializeAllButtons();
+            
+            // Manuel test için global fonksiyon
+            window.manualStart = function() {
+                console.log("🛠️ Manuel başlatma çağrıldı!");
+                startGame();
+            };
+            
+            console.log("👉 'OYUNU BAŞLAT' butonuna tıkla!");
+            console.log("👉 Veya Console'da: manualStart() yaz");
+        });
+
+        // DOM hazır olduğunda da çalıştır
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("📄 DOM hazır!");
+            initializeAllButtons();
+        });
+
+        // Hata yakalama
+        window.addEventListener('error', function(e) {
+            console.error('❌ Hata oluştu:', e.error);
+        });
+    </script>
+</body>
+</html>
