@@ -21,6 +21,7 @@
             justify-content: center;
             color: white;
             overflow: hidden;
+            touch-action: none;
         }
 
         /* BAŞLANGIÇ EKRANI */
@@ -28,11 +29,13 @@
             text-align: center;
             padding: 20px;
             width: 100%;
+            position: relative;
+            z-index: 10;
         }
 
         .start-title {
-            font-size: 4rem;
-            margin-bottom: 40px;
+            font-size: 3rem;
+            margin-bottom: 30px;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
         }
 
@@ -40,132 +43,136 @@
             background: linear-gradient(45deg, #FF6B6B, #FF8E53);
             color: white;
             border: none;
-            padding: 25px 50px;
-            font-size: 2rem;
+            padding: 20px 40px;
+            font-size: 1.5rem;
             border-radius: 50px;
             cursor: pointer;
-            margin: 40px 0;
+            margin: 30px 0;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
             font-weight: bold;
         }
 
-        .start-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
-        }
-
-        .start-button:active {
-            transform: scale(0.95);
-        }
-
         .footer {
             position: absolute;
-            bottom: 20px;
-            font-size: 0.8rem;
-            opacity: 0.7;
+            bottom: 15px;
+            font-size: 0.7rem;
+            opacity: 0.6;
         }
 
-        /* OYUN EKRANI */
+        /* OYUN EKRANI - DAHA KÜÇÜK ELEMENTLER */
         #gameScreen {
             display: none;
             width: 100%;
             height: 100vh;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            padding: 10px;
+            position: relative;
         }
 
         .game-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+        }
+
+        .game-header h2 {
+            font-size: 1.2rem;
+            margin: 0;
         }
 
         .level-info {
             background: rgba(255,255,255,0.2);
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 15px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
             backdrop-filter: blur(10px);
+            font-size: 0.8rem;
         }
 
         .score-board {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 8px;
             background: rgba(255,255,255,0.15);
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
             backdrop-filter: blur(10px);
+            width: 90%;
+            max-width: 400px;
         }
 
         .score-item {
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             text-align: center;
         }
 
         .score-value {
-            font-size: 1.3rem;
+            font-size: 1rem;
             font-weight: bold;
             color: #FFD700;
         }
 
+        /* OYUN ALANI - DAHA BÜYÜK */
         .game-container {
             position: relative;
             width: 100%;
-            height: 60vh;
+            height: 50vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 1200px;
+            perspective: 1000px;
+            margin: 10px 0;
         }
 
         #cube3d {
-            width: 200px;
-            height: 200px;
+            width: 180px;
+            height: 180px;
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: transform 0.6s ease;
         }
 
         .cube-face {
             position: absolute;
-            width: 200px;
-            height: 200px;
-            background: rgba(139, 69, 19, 0.9);
-            border: 3px solid #5D4037;
+            width: 180px;
+            height: 180px;
+            background: rgba(139, 69, 19, 0.95);
+            border: 2px solid #5D4037;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 2px;
-            padding: 5px;
+            gap: 1px;
+            padding: 3px;
             backface-visibility: visible;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
         }
 
         .cube-cell {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 5px;
+            border-radius: 3px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
             user-select: none;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
         }
 
         .cube-cell.selectable {
-            animation: pulse 2s infinite;
-            background: rgba(255, 215, 0, 0.3);
+            animation: pulse 1.5s infinite;
+            background: rgba(255, 215, 0, 0.4);
+            border: 2px solid #FFD700;
         }
 
         .cube-cell.selected {
-            transform: scale(0.85);
-            box-shadow: 0 0 20px #FFD700, inset 0 0 10px #FFD700;
+            transform: scale(0.8);
+            box-shadow: 0 0 15px #FFD700, inset 0 0 8px #FFD700;
             z-index: 10;
+            background: rgba(255, 215, 0, 0.6);
         }
 
         .cube-cell.matched {
@@ -175,18 +182,19 @@
         }
 
         /* 3D KÜP YÜZEY POZİSYONLARI */
-        .front  { transform: rotateY(0deg) translateZ(100px); }
-        .back   { transform: rotateY(180deg) translateZ(100px); }
-        .right  { transform: rotateY(90deg) translateZ(100px); }
-        .left   { transform: rotateY(-90deg) translateZ(100px); }
-        .top    { transform: rotateX(90deg) translateZ(100px); }
-        .bottom { transform: rotateX(-90deg) translateZ(100px); }
+        .front  { transform: rotateY(0deg) translateZ(90px); }
+        .back   { transform: rotateY(180deg) translateZ(90px); }
+        .right  { transform: rotateY(90deg) translateZ(90px); }
+        .left   { transform: rotateY(-90deg) translateZ(90px); }
+        .top    { transform: rotateX(90deg) translateZ(90px); }
+        .bottom { transform: rotateX(-90deg) translateZ(90px); }
 
+        /* KONTROLLER - DAHA KÜÇÜK */
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 15px;
             flex-wrap: wrap;
         }
 
@@ -194,56 +202,54 @@
             background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        button:hover {
-            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
         .touch-controls {
             position: absolute;
-            bottom: 20px;
-            display: flex;
-            gap: 20px;
-        }
-
-        .touch-area {
-            width: 80px;
-            height: 80px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-        }
-
-        .tabs {
-            position: absolute;
-            top: 20px;
+            bottom: 10px;
             display: flex;
             gap: 15px;
         }
 
+        .touch-area {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .tabs {
+            position: absolute;
+            top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
         .tab {
-            background: rgba(255,255,255,0.1);
-            padding: 10px 20px;
-            border-radius: 20px;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: 15px;
             cursor: pointer;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
+            font-size: 0.7rem;
         }
 
         .tab:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
         }
 
         @keyframes pulse {
@@ -251,39 +257,67 @@
                 box-shadow: 0 0 5px #FFD700, inset 0 0 5px #FFD700;
             }
             50% { 
-                box-shadow: 0 0 20px #FFD700, inset 0 0 10px #FFD700;
+                box-shadow: 0 0 15px #FFD700, inset 0 0 8px #FFD700;
             }
         }
 
+        /* MOBİL OPTİMİZASYON */
         @media (max-width: 768px) {
-            #cube3d {
-                width: 180px;
-                height: 180px;
-            }
-            
-            .cube-face {
-                width: 180px;
-                height: 180px;
-            }
-            
-            .front  { transform: rotateY(0deg) translateZ(90px); }
-            .back   { transform: rotateY(180deg) translateZ(90px); }
-            .right  { transform: rotateY(90deg) translateZ(90px); }
-            .left   { transform: rotateY(-90deg) translateZ(90px); }
-            .top    { transform: rotateX(90deg) translateZ(90px); }
-            .bottom { transform: rotateX(-90deg) translateZ(90px); }
-            
-            .cube-cell {
-                font-size: 1rem;
-            }
-            
             .start-title {
-                font-size: 3rem;
+                font-size: 2.5rem;
             }
             
             .start-button {
-                font-size: 1.5rem;
-                padding: 20px 40px;
+                font-size: 1.3rem;
+                padding: 18px 35px;
+            }
+            
+            #cube3d {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .cube-face {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .front  { transform: rotateY(0deg) translateZ(80px); }
+            .back   { transform: rotateY(180deg) translateZ(80px); }
+            .right  { transform: rotateY(90deg) translateZ(80px); }
+            .left   { transform: rotateY(-90deg) translateZ(80px); }
+            .top    { transform: rotateX(90deg) translateZ(80px); }
+            .bottom { transform: rotateX(-90deg) translateZ(80px); }
+            
+            .cube-cell {
+                font-size: 0.9rem;
+            }
+            
+            .game-container {
+                height: 45vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #cube3d {
+                width: 140px;
+                height: 140px;
+            }
+            
+            .cube-face {
+                width: 140px;
+                height: 140px;
+            }
+            
+            .front  { transform: rotateY(0deg) translateZ(70px); }
+            .back   { transform: rotateY(180deg) translateZ(70px); }
+            .right  { transform: rotateY(90deg) translateZ(70px); }
+            .left   { transform: rotateY(-90deg) translateZ(70px); }
+            .top    { transform: rotateX(90deg) translateZ(70px); }
+            .bottom { transform: rotateX(-90deg) translateZ(70px); }
+            
+            .cube-cell {
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -307,11 +341,11 @@
         </div>
 
         <div class="game-header">
-            <h2>Bölüm 1 - 3x3 Küp</h2>
+            <h2>Bölüm 1</h2>
         </div>
 
         <div class="level-info">
-            <p>Kalan Çift: <span id="remainingPairs">8</span> | Dönüş Hakkı: <span id="turnsLeft">10</span></p>
+            <p>Kalan: <span id="remainingPairs">8</span> | Dönüş: <span id="turnsLeft">10</span></p>
         </div>
 
         <div class="score-board">
@@ -340,14 +374,16 @@
         </div>
 
         <div class="controls">
-            <button onclick="showHint()">İpucu Göster</button>
-            <button onclick="resetLevel()">Seviyeyi Sıfırla</button>
-            <button onclick="backToMenu()">Menüye Dön</button>
+            <button onclick="showHint()">İpucu</button>
+            <button onclick="resetLevel()">Yenile</button>
+            <button onclick="backToMenu()">Menü</button>
         </div>
 
         <div class="touch-controls">
-            <div class="touch-area" onclick="rotateCube('left')">⬅️</div>
-            <div class="touch-area" onclick="rotateCube('right')">➡️</div>
+            <div class="touch-area" onclick="rotateCubeX(-30)">↻</div>
+            <div class="touch-area" onclick="rotateCubeY(-30)">↺</div>
+            <div class="touch-area" onclick="rotateCubeY(30)">↻</div>
+            <div class="touch-area" onclick="rotateCubeX(30)">↺</div>
         </div>
     </div>
 
@@ -355,7 +391,11 @@
         // Oyun konfigürasyonu
         const gameConfig = {
             levels: {
-                1: { size: 3, animals: ['🦁', '🐯', '🐻', '🐼', '🐨', '🐮', '🐷', '🐸', '🐵'] }
+                1: { 
+                    size: 3, 
+                    animals: ['🦁', '🐯', '🐻', '🐼', '🐨', '🐮', '🐷', '🐸', '🐵'],
+                    maxTurns: 10
+                }
             },
             cubeFaces: ['front', 'back', 'right', 'left', 'top', 'bottom']
         };
@@ -370,13 +410,16 @@
             selectedCell: null,
             cells: [],
             remainingPairs: 0,
-            currentRotation: { x: -15, y: 15 },
-            isRotating: false
+            currentRotation: { x: 0, y: 0, z: 0 },
+            isRotating: false,
+            isDragging: false,
+            lastX: 0,
+            lastY: 0
         };
 
-        // Oyunu başlat - BUTON ÇALIŞMA SORUNU FIX
+        // Oyunu başlat
         function startGame() {
-            console.log("Oyun başlat butonu çalıştı!");
+            console.log("Oyun başlatılıyor...");
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'flex';
             initializeGame();
@@ -390,15 +433,15 @@
 
         // Sekme fonksiyonları
         function showScores() {
-            alert('En yüksek skorlar burada görünecek!');
+            alert('En yüksek skor: ' + gameState.score);
         }
 
         function showSettings() {
-            alert('Oyun ayarları burada olacak!');
+            alert('Oyun ayarları yakında eklenecek!');
         }
 
         function showHelp() {
-            alert('Küpü döndürerek aynı hayvanları eşleştirin!');
+            alert('Küpü her yönde döndürerek aynı hayvanları bul ve eşleştir!');
         }
 
         // Oyunu başlangıç durumuna getir
@@ -409,29 +452,23 @@
             gameState.selectedCell = null;
             gameState.moves = 0;
             gameState.matches = 0;
-            gameState.turnsLeft = 10;
+            gameState.turnsLeft = gameConfig.levels[1].maxTurns;
             gameState.remainingPairs = 0;
-            gameState.currentRotation = { x: -15, y: 15 };
+            gameState.currentRotation = { x: 0, y: 0, z: 0 };
 
             const levelConfig = gameConfig.levels[1];
             
             // Her yüzey için hayvanları dağıt
-            const allAnimals = [];
-            gameConfig.cubeFaces.forEach(face => {
+            gameConfig.cubeFaces.forEach((face, faceIndex) => {
                 const faceAnimals = [...levelConfig.animals];
                 shuffleArray(faceAnimals);
-                allAnimals.push(...faceAnimals.slice(0, 9));
-            });
-
-            // Küp yüzeylerini oluştur
-            gameConfig.cubeFaces.forEach((face, faceIndex) => {
-                createCubeFace(face, allAnimals.slice(faceIndex * 9, (faceIndex + 1) * 9));
+                createCubeFace(face, faceAnimals.slice(0, 9));
             });
 
             updateCubeRotation();
             updateSelectableCells();
             updateUI();
-            setupTouchControls();
+            setupDragControls();
         }
 
         // Küp yüzeyi oluşturma
@@ -453,9 +490,18 @@
                     cell.dataset.animal = animals[animalIndex];
                     cell.dataset.id = `${face}-${row}-${col}`;
                     
-                    cell.addEventListener('click', (e) => {
+                    // TIKLAMA OLAYI - KESİN ÇALIŞSIN
+                    cell.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        selectCell(cell);
+                        console.log("Hücre tıklandı:", this.dataset.animal);
+                        selectCell(this);
+                    });
+                    
+                    // Touch event de ekle
+                    cell.addEventListener('touchstart', function(e) {
+                        e.stopPropagation();
+                        console.log("Hücre touch:", this.dataset.animal);
+                        selectCell(this);
                     });
                     
                     faceElement.appendChild(cell);
@@ -478,25 +524,40 @@
             gameState.remainingPairs += 9;
         }
 
-        // Hücre seçme
+        // Hücre seçme - GELİŞMİŞ VERSİYON
         function selectCell(cell) {
-            if (!cell.classList.contains('selectable') || cell.classList.contains('matched')) {
+            console.log("selectCell çağrıldı:", cell);
+            
+            if (!cell || cell.classList.contains('matched')) {
+                console.log("Hücre uygun değil");
+                return;
+            }
+
+            if (!cell.classList.contains('selectable')) {
+                console.log("Hücre seçilebilir değil");
                 return;
             }
 
             if (!gameState.selectedCell) {
+                // İlk seçim
+                console.log("İlk seçim:", cell.dataset.animal);
                 gameState.selectedCell = cell;
                 cell.classList.add('selected');
             } else {
+                // İkinci seçim
                 const firstCell = gameState.selectedCell;
+                console.log("İkinci seçim:", cell.dataset.animal, "İlk:", firstCell.dataset.animal);
                 
                 if (firstCell === cell) {
+                    // Aynı hücreye tekrar tıklandı
                     firstCell.classList.remove('selected');
                     gameState.selectedCell = null;
                     return;
                 }
 
                 if (firstCell.dataset.animal === cell.dataset.animal) {
+                    // EŞLEŞME BULUNDU
+                    console.log("Eşleşme bulundu!");
                     firstCell.classList.add('matched');
                     cell.classList.add('matched');
                     
@@ -504,11 +565,15 @@
                     gameState.score += 50;
                     gameState.remainingPairs -= 2;
                     
+                    // Eşleşen hücreleri işaretle
                     gameState.cells.find(c => c.id === firstCell.dataset.id).matched = true;
                     gameState.cells.find(c => c.id === cell.dataset.id).matched = true;
                     
+                    // Efekt
                     showMatchEffect(firstCell, cell);
                 } else {
+                    // Eşleşme yok
+                    console.log("Eşleşme yok");
                     cell.classList.add('selected');
                     setTimeout(() => {
                         firstCell.classList.remove('selected');
@@ -535,86 +600,106 @@
 
         // Seçilebilir hücreleri güncelle
         function updateSelectableCells() {
+            // Önce hepsini temizle
             document.querySelectorAll('.cube-cell').forEach(cell => {
                 cell.classList.remove('selectable');
             });
 
+            // Kenardaki ve eşleşmemiş hücreleri seçilebilir yap
             gameState.cells.forEach(cell => {
                 if (!cell.matched && isOnEdge(cell)) {
                     cell.element.classList.add('selectable');
                 }
             });
+            
+            console.log("Seçilebilir hücreler güncellendi");
         }
 
         // Kenar kontrolü
         function isOnEdge(cell) {
             const row = parseInt(cell.row);
             const col = parseInt(cell.col);
-            return row === 0 || row === 2 || col === 0 || col === 2;
+            // 3x3 grid'de tüm hücreler kenarda sayılır (basit versiyon)
+            return true; // Şimdilik tüm hücreler seçilebilir
         }
 
-        // Küp döndürme
-        function rotateCube(direction) {
-            if (gameState.isRotating) return;
-            
-            gameState.isRotating = true;
-            
-            switch(direction) {
-                case 'left':
-                    gameState.currentRotation.y -= 90;
-                    break;
-                case 'right':
-                    gameState.currentRotation.y += 90;
-                    break;
-            }
-            
+        // KÜP DÖNDÜRME - TÜM EKSENLERDE
+        function rotateCubeX(angle) {
+            gameState.currentRotation.x += angle;
             gameState.turnsLeft--;
             updateCubeRotation();
             updateUI();
-            
-            setTimeout(() => {
-                gameState.isRotating = false;
-                updateSelectableCells();
-            }, 800);
+            updateSelectableCells();
+        }
+
+        function rotateCubeY(angle) {
+            gameState.currentRotation.y += angle;
+            gameState.turnsLeft--;
+            updateCubeRotation();
+            updateUI();
+            updateSelectableCells();
         }
 
         // Küp dönüşünü güncelle
         function updateCubeRotation() {
             const cube = document.getElementById('cube3d');
             cube.style.transform = 
-                `rotateX(${gameState.currentRotation.x}deg) rotateY(${gameState.currentRotation.y}deg)`;
+                `rotateX(${gameState.currentRotation.x}deg) rotateY(${gameState.currentRotation.y}deg) rotateZ(${gameState.currentRotation.z}deg)`;
         }
 
-        // Dokunmatik kontroller
-        function setupTouchControls() {
-            let startX, startY;
+        // SÜRÜKLEME KONTROLLERİ - SONSUZ DÖNÜŞ
+        function setupDragControls() {
             const gameContainer = document.getElementById('gameContainer');
-            
-            gameContainer.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
+            let startX, startY;
+
+            gameContainer.addEventListener('mousedown', startDrag);
+            gameContainer.addEventListener('touchstart', startDrag);
+
+            function startDrag(e) {
                 e.preventDefault();
-            });
-            
-            gameContainer.addEventListener('touchmove', (e) => {
-                if (gameState.isRotating) return;
+                gameState.isDragging = true;
+                startX = e.clientX || e.touches[0].clientX;
+                startY = e.clientY || e.touches[0].clientY;
                 
-                const currentX = e.touches[0].clientX;
-                const currentY = e.touches[0].clientY;
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('touchmove', drag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchend', stopDrag);
+            }
+
+            function drag(e) {
+                if (!gameState.isDragging) return;
+                e.preventDefault();
+
+                const currentX = e.clientX || e.touches[0].clientX;
+                const currentY = e.clientY || e.touches[0].clientY;
+                
                 const deltaX = currentX - startX;
+                const deltaY = currentY - startY;
+
+                // HER YÖNDE DÖNÜŞ
+                gameState.currentRotation.y += deltaX * 0.5;
+                gameState.currentRotation.x += deltaY * 0.5;
+
+                updateCubeRotation();
+
+                startX = currentX;
+                startY = currentY;
+            }
+
+            function stopDrag() {
+                gameState.isDragging = false;
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('touchmove', drag);
+                document.removeEventListener('mouseup', stopDrag);
+                document.removeEventListener('touchend', stopDrag);
                 
-                if (Math.abs(deltaX) > 50) {
-                    if (deltaX > 0) {
-                        rotateCube('right');
-                    } else {
-                        rotateCube('left');
-                    }
-                    startX = currentX;
-                    startY = currentY;
+                // Dönüş hakkını azalt
+                if (gameState.turnsLeft > 0) {
+                    gameState.turnsLeft--;
+                    updateUI();
                 }
-                
-                e.preventDefault();
-            });
+            }
         }
 
         // İpucu göster
@@ -640,11 +725,13 @@
         function checkGameStatus() {
             if (gameState.remainingPairs <= 0) {
                 setTimeout(() => {
-                    alert(`Tebrikler! Tüm eşleştirmeleri tamamladın! 🎉\nPuan: ${gameState.score}`);
+                    alert(`🎉 Tebrikler! Tüm eşleştirmeler tamamlandı!\nPuan: ${gameState.score}`);
+                    backToMenu();
                 }, 1000);
             } else if (gameState.turnsLeft <= 0) {
                 setTimeout(() => {
-                    alert('Dönüş hakkın bitti! ❌\nYeniden başla.');
+                    alert('❌ Dönüş hakkın bitti!\nYeniden başla.');
+                    resetLevel();
                 }, 500);
             }
         }
@@ -669,11 +756,12 @@
 
         // Sayfa yüklendiğinde
         window.onload = function() {
-            console.log("Sayfa yüklendi!");
+            console.log("Sayfa yüklendi - 3D Blocks hazır!");
+            // Başlangıçta boş küp göster
             gameConfig.cubeFaces.forEach(face => {
                 const faceElement = document.createElement('div');
                 faceElement.className = `cube-face ${face}`;
-                faceElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;">🎲</div>';
+                faceElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#666;">?</div>';
                 document.getElementById('cube3d').appendChild(faceElement);
             });
             updateCubeRotation();
