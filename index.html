@@ -107,83 +107,62 @@
             color: #FFD700;
         }
 
-        /* OYUN ALANI - BÜYÜK KÜP */
+        /* OYUN ALANI - 3D KÜP */
         .game-container {
             position: relative;
             width: 100%;
-            height: 60vh;
+            height: 55vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 1200px;
+            perspective: 1000px;
             margin: 5px 0;
         }
 
         #mainCube {
+            width: 200px;
+            height: 200px;
             position: relative;
             transform-style: preserve-3d;
             transition: transform 0.1s linear;
+            transform: rotateX(20deg) rotateY(20deg);
         }
-
-        /* FARKLI BOYUTLAR İÇİN KÜP */
-        #mainCube.size-2 { width: 120px; height: 120px; }
-        #mainCube.size-3 { width: 180px; height: 180px; }
-        #mainCube.size-4 { width: 240px; height: 240px; }
 
         .cube-face {
             position: absolute;
-            display: grid;
-            gap: 2px;
-            padding: 3px;
+            width: 200px;
+            height: 200px;
             background: rgba(139, 69, 19, 0.9);
             border: 2px solid #5D4037;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 3px;
+            padding: 5px;
             backface-visibility: visible;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
         }
 
-        /* BOYUTLARA GÖRE GRID */
-        .cube-face.size-2 { 
-            width: 120px; height: 120px;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-        }
-        .cube-face.size-3 { 
-            width: 180px; height: 180px;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-        }
-        .cube-face.size-4 { 
-            width: 240px; height: 240px;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-        }
-
         .mini-cube {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 3px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.2rem;
             cursor: pointer;
             transition: all 0.3s ease;
             user-select: none;
-            box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
         }
-
-        /* BOYUTLARA GÖRE FONT */
-        .mini-cube.size-2 { font-size: 1.4rem; }
-        .mini-cube.size-3 { font-size: 1.2rem; }
-        .mini-cube.size-4 { font-size: 1rem; }
 
         .mini-cube.selectable {
             animation: pulse 1.5s infinite;
             background: rgba(255, 215, 0, 0.3);
-            border: 2px solid #FFD700;
         }
 
         .mini-cube.selected {
             transform: scale(0.85);
-            box-shadow: 0 0 12px #FFD700, inset 0 0 6px #FFD700;
+            box-shadow: 0 0 15px #FFD700;
             background: rgba(255, 215, 0, 0.6);
         }
 
@@ -194,26 +173,12 @@
         }
 
         /* 3D KÜP YÜZEY POZİSYONLARI */
-        .size-2 .front  { transform: rotateY(0deg) translateZ(60px); }
-        .size-2 .back   { transform: rotateY(180deg) translateZ(60px); }
-        .size-2 .right  { transform: rotateY(90deg) translateZ(60px); }
-        .size-2 .left   { transform: rotateY(-90deg) translateZ(60px); }
-        .size-2 .top    { transform: rotateX(90deg) translateZ(60px); }
-        .size-2 .bottom { transform: rotateX(-90deg) translateZ(60px); }
-
-        .size-3 .front  { transform: rotateY(0deg) translateZ(90px); }
-        .size-3 .back   { transform: rotateY(180deg) translateZ(90px); }
-        .size-3 .right  { transform: rotateY(90deg) translateZ(90px); }
-        .size-3 .left   { transform: rotateY(-90deg) translateZ(90px); }
-        .size-3 .top    { transform: rotateX(90deg) translateZ(90px); }
-        .size-3 .bottom { transform: rotateX(-90deg) translateZ(90px); }
-
-        .size-4 .front  { transform: rotateY(0deg) translateZ(120px); }
-        .size-4 .back   { transform: rotateY(180deg) translateZ(120px); }
-        .size-4 .right  { transform: rotateY(90deg) translateZ(120px); }
-        .size-4 .left   { transform: rotateY(-90deg) translateZ(120px); }
-        .size-4 .top    { transform: rotateX(90deg) translateZ(120px); }
-        .size-4 .bottom { transform: rotateX(-90deg) translateZ(120px); }
+        .front  { transform: rotateY(0deg) translateZ(100px); }
+        .back   { transform: rotateY(180deg) translateZ(100px); }
+        .right  { transform: rotateY(90deg) translateZ(100px); }
+        .left   { transform: rotateY(-90deg) translateZ(100px); }
+        .top    { transform: rotateX(90deg) translateZ(100px); }
+        .bottom { transform: rotateX(-90deg) translateZ(100px); }
 
         .controls {
             display: flex;
@@ -234,10 +199,10 @@
 
         @keyframes pulse {
             0%, 100% { 
-                box-shadow: 0 0 4px #FFD700, inset 0 0 4px #FFD700;
+                box-shadow: 0 0 5px #FFD700;
             }
             50% { 
-                box-shadow: 0 0 12px #FFD700, inset 0 0 6px #FFD700;
+                box-shadow: 0 0 15px #FFD700;
             }
         }
     </style>
@@ -246,7 +211,7 @@
     <!-- BAŞLANGIÇ EKRANI -->
     <div id="startScreen">
         <h1 class="start-title">🎲 3D Blocks 🎲</h1>
-        <button class="start-button" onclick="startGame()">OYUNU BAŞLAT</button>
+        <button class="start-button" id="startBtn">OYUNU BAŞLAT</button>
         <div class="footer">
             Yapımcı: Mbdeasy03
         </div>
@@ -255,11 +220,11 @@
     <!-- OYUN EKRANI -->
     <div id="gameScreen">
         <div class="game-header">
-            <h2>Seviye <span id="currentLevel">1</span> - <span id="cubeSize">2x2</span></h2>
+            <h2>Seviye 1 - 3x3 Küp</h2>
         </div>
 
         <div class="level-info">
-            <p>Kalan Eşleşme: <span id="remainingPairs">2</span></p>
+            <p>Kalan Eşleşme: <span id="remainingPairs">4</span></p>
         </div>
 
         <div class="score-board">
@@ -278,49 +243,48 @@
         </div>
 
         <div class="game-container" id="gameContainer">
-            <div id="mainCube" class="size-2"></div>
+            <div id="mainCube">
+                <!-- 3D KÜP BURAYA EKLENECEK -->
+            </div>
         </div>
 
         <div class="controls">
             <button onclick="showHint()">İpucu</button>
-            <button onclick="resetLevel()">Yenile</button>
+            <button onclick="resetGame()">Yenile</button>
             <button onclick="backToMenu()">Menü</button>
         </div>
     </div>
 
     <script>
-        // OYUN KONFİGÜRASYONU - BÜYÜYEN KÜPLER
+        // TAM OYUN KODU - 3D KÜP EŞLEŞTİRME
+        console.log("🎮 3D Blocks Oyunu Yükleniyor...");
+
         const gameConfig = {
-            levels: {
-                1: { size: 2, animals: 2, name: "2x2" },   // 2x2 = 4 küp, 4 dolu
-                2: { size: 3, animals: 4, name: "3x3" },   // 3x3 = 9 küp, 8 dolu + 1 boş
-                3: { size: 4, animals: 8, name: "4x4" }    // 4x4 = 16 küp, 16 dolu
-            },
-            animalEmojis: ['🦁', '🐯', '🐻', '🐼', '🐨', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦'],
+            animals: ['🦁', '🐯', '🐻', '🐼'],
             cubeFaces: ['front', 'back', 'right', 'left', 'top', 'bottom']
         };
 
         let gameState = {
-            currentLevel: 1,
             score: 0,
             moves: 0,
             matches: 0,
             selectedCube: null,
-            cubes: [],
-            remainingPairs: 0,
-            currentRotation: { x: 15, y: 15 },
+            remainingPairs: 4,
+            currentRotation: { x: 20, y: 20 },
             isDragging: false,
             lastX: 0,
             lastY: 0
         };
 
-        // OYUNU BAŞLAT
+        // BUTONU KESİN ÇALIŞTIR
+        document.getElementById('startBtn').addEventListener('click', startGame);
+
         function startGame() {
             console.log("🚀 Oyun başlatılıyor...");
             
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'flex';
-            gameState.currentLevel = 1;
+            
             initializeGame();
         }
 
@@ -330,128 +294,76 @@
         }
 
         function initializeGame() {
-            console.log(`🔄 Seviye ${gameState.currentLevel} başlatılıyor...`);
+            console.log("🔄 Oyun hazırlanıyor...");
             
             const mainCube = document.getElementById('mainCube');
             mainCube.innerHTML = '';
             
+            gameState.score = 0;
             gameState.moves = 0;
             gameState.matches = 0;
             gameState.selectedCube = null;
-            gameState.cubes = [];
+            gameState.remainingPairs = 4;
+            gameState.currentRotation = { x: 20, y: 20 };
 
-            const levelConfig = gameConfig.levels[gameState.currentLevel];
-            const totalCells = levelConfig.size * levelConfig.size;
-            gameState.remainingPairs = levelConfig.animals;
-
-            // ANA KÜPÜ OLUŞTUR
-            mainCube.className = `size-${levelConfig.size}`;
+            // 3D KÜPÜ OLUŞTUR
+            create3DCube();
             
-            // YÜZEYLERİ OLUŞTUR
-            gameConfig.cubeFaces.forEach((face) => {
-                createCubeFace(face, levelConfig.size, levelConfig.animals);
-            });
-
             updateUI();
             setupDragControls();
-            updateSelectableCubes();
+            enableAllCubes();
             
-            console.log(`✅ ${levelConfig.name} küp oluşturuldu!`);
+            console.log("✅ Oyun hazır! Küplere tıkla!");
         }
 
-        function createCubeFace(face, size, animalCount) {
-            const faceElement = document.createElement('div');
-            faceElement.className = `cube-face ${face} size-${size}`;
+        function create3DCube() {
+            const mainCube = document.getElementById('mainCube');
             
-            // BU YÜZEY İÇİN HAYVANLARI HAZIRLA
-            const animalsForThisFace = [];
-            const availableAnimals = gameConfig.animalEmojis.slice(0, animalCount);
-            
-            // HER HAYVANDAN 2 TANE OLUŞTUR (EŞLEŞTİRME İÇİN)
-            availableAnimals.forEach(animal => {
-                animalsForThisFace.push(animal, animal);
-            });
-            
-            // BOŞ KÜPLER EKLE (TEK SAYIDA OLSUN DİYE)
-            const totalCells = size * size;
-            const neededEmptyCells = totalCells - animalsForThisFace.length;
-            for (let i = 0; i < neededEmptyCells; i++) {
-                animalsForThisFace.push(null);
-            }
-            
-            // KARIŞTIR
-            shuffleArray(animalsForThisFace);
-            
-            // MİNİ KÜPLERİ OLUŞTUR
-            for (let row = 0; row < size; row++) {
-                for (let col = 0; col < size; col++) {
-                    const index = row * size + col;
+            gameConfig.cubeFaces.forEach(face => {
+                const faceElement = document.createElement('div');
+                faceElement.className = `cube-face ${face}`;
+                
+                // HER YÜZEY İÇİN 9 KÜP (3x3)
+                for (let i = 0; i < 9; i++) {
                     const cell = document.createElement('div');
-                    cell.className = `mini-cube size-${size}`;
+                    cell.className = 'mini-cube';
                     
-                    if (animalsForThisFace[index]) {
-                        cell.textContent = animalsForThisFace[index];
-                        cell.dataset.animal = animalsForThisFace[index];
-                        cell.dataset.face = face;
-                        cell.dataset.row = row;
-                        cell.dataset.col = col;
-                        cell.dataset.id = `${face}-${row}-${col}`;
-                        
-                        // TIKLAMA OLAYI
-                        cell.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            console.log("🎯 Küp tıklandı:", this.dataset.animal);
-                            selectCube(this);
-                        });
-                    } else {
-                        cell.style.visibility = 'hidden';
-                    }
+                    // RASTGELE HAYVAN SEÇ
+                    const randomAnimal = gameConfig.animals[Math.floor(Math.random() * 4)];
+                    cell.textContent = randomAnimal;
+                    cell.dataset.animal = randomAnimal;
+                    cell.dataset.id = `${face}-${i}`;
+                    
+                    // TIKLAMA OLAYI
+                    cell.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        console.log("🎯 Küp tıklandı:", this.dataset.animal);
+                        selectCube(this);
+                    });
                     
                     faceElement.appendChild(cell);
-                    
-                    // OYUN DURUMUNA EKLE (BOŞ DEĞİLSE)
-                    if (animalsForThisFace[index]) {
-                        gameState.cubes.push({
-                            element: cell,
-                            animal: animalsForThisFace[index],
-                            face: face,
-                            row: row,
-                            col: col,
-                            id: `${face}-${row}-${col}`,
-                            matched: false
-                        });
-                    }
                 }
-            }
+                
+                mainCube.appendChild(faceElement);
+            });
             
-            document.getElementById('mainCube').appendChild(faceElement);
-            
-            // KÜP DÖNÜŞÜNÜ GÜNCELLE
             updateCubeRotation();
         }
 
         function selectCube(cube) {
-            if (cube.classList.contains('matched') || cube.style.visibility === 'hidden') {
-                return;
-            }
-
-            if (!cube.classList.contains('selectable')) {
-                console.log("Bu küp seçilemez:", cube.dataset.id);
-                return;
-            }
-
-            console.log("Küp seçildi:", cube.dataset.animal, cube.dataset.id);
+            if (cube.classList.contains('matched')) return;
+            
+            console.log("🔵 Küp seçiliyor:", cube.dataset.animal);
 
             if (!gameState.selectedCube) {
-                // İlk seçim
+                // İLK SEÇİM
                 gameState.selectedCube = cube;
                 cube.classList.add('selected');
             } else {
-                // İkinci seçim
+                // İKİNCİ SEÇİM
                 const firstCube = gameState.selectedCube;
                 
                 if (firstCube === cube) {
-                    // Aynı küpe tekrar tıklandı
                     firstCube.classList.remove('selected');
                     gameState.selectedCube = null;
                     return;
@@ -459,23 +371,23 @@
 
                 if (firstCube.dataset.animal === cube.dataset.animal) {
                     // EŞLEŞME BULUNDU
-                    console.log("EŞLEŞME BULUNDU!");
+                    console.log("🎉 EŞLEŞME BULUNDU!");
                     
                     firstCube.classList.add('matched');
                     cube.classList.add('matched');
                     
                     gameState.matches++;
-                    gameState.score += 50 * gameState.currentLevel;
+                    gameState.score += 50;
                     gameState.remainingPairs--;
                     
-                    // Eşleşen küpleri işaretle
-                    gameState.cubes.find(c => c.id === firstCube.dataset.id).matched = true;
-                    gameState.cubes.find(c => c.id === cube.dataset.id).matched = true;
-                    
-                    // SEVİYE TAMAMLAMA KONTROLÜ
-                    checkLevelCompletion();
+                    if (gameState.remainingPairs <= 0) {
+                        setTimeout(() => {
+                            alert(`🏆 TEBRİKLER! Oyunu tamamladınız!\nPuan: ${gameState.score}`);
+                            backToMenu();
+                        }, 1000);
+                    }
                 } else {
-                    // Eşleşme yok
+                    // EŞLEŞME YOK
                     cube.classList.add('selected');
                     setTimeout(() => {
                         firstCube.classList.remove('selected');
@@ -486,40 +398,7 @@
                 gameState.moves++;
                 gameState.selectedCube = null;
                 updateUI();
-                updateSelectableCubes();
             }
-        }
-
-        function checkLevelCompletion() {
-            if (gameState.remainingPairs <= 0) {
-                setTimeout(() => {
-                    if (gameState.currentLevel < 3) {
-                        // SONRAKİ SEVİYEYE GEÇ
-                        gameState.currentLevel++;
-                        const nextLevel = gameConfig.levels[gameState.currentLevel];
-                        alert(`🎉 Seviye ${gameState.currentLevel - 1} tamamlandı!\nYeni seviye: ${nextLevel.name}`);
-                        initializeGame();
-                    } else {
-                        // TÜM SEVİYELER TAMAMLANDI
-                        alert(`🏆 TEBRİKLER! Tüm seviyeleri tamamladınız!\nToplam Puan: ${gameState.score}`);
-                        backToMenu();
-                    }
-                }, 1000);
-            }
-        }
-
-        function updateSelectableCubes() {
-            // Önce hepsini temizle
-            document.querySelectorAll('.mini-cube').forEach(cube => {
-                cube.classList.remove('selectable');
-            });
-
-            // Eşleşmemiş ve görünür küpleri seçilebilir yap
-            gameState.cubes.forEach(cube => {
-                if (!cube.matched && cube.element.style.visibility !== 'hidden') {
-                    cube.element.classList.add('selectable');
-                }
-            });
         }
 
         function setupDragControls() {
@@ -544,8 +423,8 @@
                 const deltaX = currentX - gameState.lastX;
                 const deltaY = currentY - gameState.lastY;
 
-                gameState.currentRotation.y += deltaX;
-                gameState.currentRotation.x += deltaY;
+                gameState.currentRotation.y += deltaX * 0.8;
+                gameState.currentRotation.x += deltaY * 0.8;
 
                 updateCubeRotation();
 
@@ -569,8 +448,42 @@
                 `rotateX(${gameState.currentRotation.x}deg) rotateY(${gameState.currentRotation.y}deg)`;
         }
 
+        function enableAllCubes() {
+            setTimeout(() => {
+                document.querySelectorAll('.mini-cube').forEach(cube => {
+                    cube.classList.add('selectable');
+                });
+                console.log("✅ Tüm küpler seçilebilir!");
+            }, 500);
+        }
+
         function showHint() {
             const selectableCubes = document.querySelectorAll('.mini-cube.selectable:not(.matched)');
             if (selectableCubes.length > 0) {
                 const randomCube = selectableCubes[Math.floor(Math.random() * selectableCubes.length)];
-     
+                randomCube.style.animation = 'pulse 0.5s infinite';
+                setTimeout(() => {
+                    randomCube.style.animation = '';
+                }, 1000);
+            }
+        }
+
+        function resetGame() {
+            initializeGame();
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('moves').textContent = gameState.moves;
+            document.getElementById('matches').textContent = gameState.matches;
+            document.getElementById('remainingPairs').textContent = gameState.remainingPairs;
+        }
+
+        // SAYFA YÜKLENDİĞİNDE
+        window.onload = function() {
+            console.log("✅ 3D Blocks tamamen yüklendi!");
+            console.log("👉 'OYUNU BAŞLAT' butonuna tıkla!");
+        };
+    </script>
+</body>
+</html>
