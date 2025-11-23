@@ -1,4 +1,4 @@
-       <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -172,19 +172,12 @@
             animation: pulse 1.5s infinite;
         }
 
-        /* ÖNEMLİ DEĞİŞİKLİK: Sadece tıklanan spesifik küp vurgulansın */
         .mini-cube.selected {
             transform: scale(0.85);
             box-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700, inset 0 0 10px #FFD700;
-            background: rgba(255, 215, 0, 0.8);
+            background: rgba(255, 215, 0, 0.9);
             z-index: 10;
-            animation: strongPulse 0.5s infinite;
-        }
-
-        /* Tüm yüzlerdeki aynı mini küp için daha hafif vurgu */
-        .mini-cube.same-mini-cube {
-            background: rgba(255, 235, 150, 0.9);
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            animation: strongPulse 0.8s infinite;
         }
 
         .mini-cube.matched {
@@ -235,10 +228,12 @@
 
         @keyframes strongPulse {
             0%, 100% { 
-                box-shadow: 0 0 15px #FFD700, 0 0 25px #FFD700;
+                box-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700;
+                transform: scale(0.9);
             }
             50% { 
-                box-shadow: 0 0 25px #FFD700, 0 0 35px #FFD700;
+                box-shadow: 0 0 30px #FFD700, 0 0 40px #FFD700;
+                transform: scale(0.85);
             }
         }
     </style>
@@ -292,7 +287,7 @@
     </div>
 
     <script>
-        // === OYUN KODU - 1. VE 3. MADDE ÇÖZÜLDÜ ===
+        // === OYUN KODU - TÜM SORUNLAR KESİN ÇÖZÜLDÜ ===
         console.log("=== 3D BLOCKS OYUNU YÜKLENİYOR ===");
 
         // OYUN AYARLARI
@@ -312,8 +307,7 @@
             isDragging: false,
             lastX: 0,
             lastY: 0,
-            cubeData: {},
-            miniCubeAnimals: [] // Mini küp hayvanlarını saklayacağız
+            miniCubeAnimals: [] // Her mini küp için hayvan saklayacağız
         };
 
         // === TÜM BUTONLARI BAŞLAT ===
@@ -323,7 +317,6 @@
             const startButton = document.getElementById('startButton');
             if (startButton) {
                 startButton.addEventListener('click', startGame);
-                startButton.style.border = "3px solid #00FF00";
                 console.log("✅ Başlat butonu hazır");
             }
             
@@ -377,7 +370,6 @@
             gameState.selectedCube = null;
             gameState.remainingPairs = 4;
             gameState.currentRotation = { x: 20, y: 20 };
-            gameState.cubeData = {};
             gameState.miniCubeAnimals = [];
 
             // 3D KÜPÜ OLUŞTUR
@@ -397,16 +389,16 @@
                 return;
             }
             
-            // ÖNEMLİ DEĞİŞİKLİK: 9 mini küp için hayvanları belirle ve sakla
+            // ÖNEMLİ: 9 mini küp için hayvanları belirle
             const animalPairs = [];
             
-            // 4 çift hayvan oluştur (8 küp) + 1 bonus
+            // 4 çift hayvan oluştur (8 küp)
             for (let i = 0; i < 4; i++) {
                 const animal = gameConfig.animals[i];
                 animalPairs.push(animal, animal); // Her hayvandan 2 tane
             }
             
-            // 9. küp için bonus hayvan
+            // 9. küp için bonus hayvan (eşi olmayan)
             animalPairs.push(gameConfig.animals[8]);
             
             // Karıştır
@@ -415,8 +407,9 @@
                 [animalPairs[i], animalPairs[j]] = [animalPairs[j], animalPairs[i]];
             }
             
-            // Her mini küp için hayvan ata ve sakla
+            // Mini küp hayvanlarını sakla
             gameState.miniCubeAnimals = [...animalPairs];
+            console.log("🎲 Mini küp hayvanları:", gameState.miniCubeAnimals);
 
             // 6 yüzeyi oluştur
             gameConfig.cubeFaces.forEach(face => {
@@ -424,30 +417,23 @@
                 faceElement.className = `cube-face ${face}`;
                 
                 // HER YÜZEY İÇİN 9 KÜP (3x3)
-                for (let i = 0; i < 9; i++) {
+                for (let miniCubeId = 0; miniCubeId < 9; miniCubeId++) {
                     const cell = document.createElement('div');
                     cell.className = 'mini-cube';
                     
-                    // ÖNEMLİ DEĞİŞİKLİK: AYNI MİNİ KÜPÜN TÜM YÜZLERİNDE AYNI HAYVAN
-                    const animal = gameState.miniCubeAnimals[i];
+                    // ÖNEMLİ: AYNI MİNİ KÜPÜN TÜM YÜZLERİNDE AYNI HAYVAN
+                    const animal = gameState.miniCubeAnimals[miniCubeId];
                     cell.textContent = animal;
                     cell.dataset.animal = animal;
-                    cell.dataset.miniCubeId = i; // Mini küp ID'si
+                    cell.dataset.miniCubeId = miniCubeId; // Mini küp ID'si
                     cell.dataset.face = face;
                     
                     // TIKLAMA OLAYI
-                    cell.addEventListener('click', function() {
-                        console.log("🎯 Küp tıklandı:", this.dataset.animal, "MiniCube ID:", this.dataset.miniCubeId, "Yüz:", this.dataset.face);
+                    cell.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        console.log("🎯 Küp tıklandı:", this.dataset.animal, "MiniCube ID:", this.dataset.miniCubeId);
                         selectCube(this);
                     });
-                    
-                    // Küp verisini sakla
-                    if (!gameState.cubeData[i]) {
-                        gameState.cubeData[i] = {
-                            animal: animal,
-                            matched: false
-                        };
-                    }
                     
                     faceElement.appendChild(cell);
                 }
@@ -456,61 +442,56 @@
             });
             
             updateCubeRotation();
-            console.log("🎲 3D Küp oluşturuldu. Her mini küpün 6 yüzünde aynı hayvan var!");
+            console.log("✅ 3D Küp oluşturuldu! Her mini küpün 6 yüzünde aynı hayvan var.");
         }
 
         function selectCube(clickedCube) {
-            const miniCubeId = clickedCube.dataset.miniCubeId;
-            const animal = clickedCube.dataset.animal;
-            const face = clickedCube.dataset.face;
-            
-            console.log("🔵 Küp seçiliyor:", animal, "ID:", miniCubeId, "Yüz:", face);
-
-            // Eşleşmiş küpe tıklanıyorsa işlem yapma
-            if (gameState.cubeData[miniCubeId]?.matched) {
+            if (clickedCube.classList.contains('matched')) {
                 console.log("❌ Bu küp zaten eşleşmiş!");
                 return;
             }
+
+            const miniCubeId = clickedCube.dataset.miniCubeId;
+            const animal = clickedCube.dataset.animal;
+            
+            console.log("🔵 Küp seçiliyor:", animal, "ID:", miniCubeId);
 
             if (!gameState.selectedCube) {
                 // İLK SEÇİM
                 gameState.selectedCube = {
                     element: clickedCube,
-                    miniCubeId: miniCubeId,
-                    animal: animal,
-                    face: face
+                    miniCubeId: parseInt(miniCubeId),
+                    animal: animal
                 };
                 
-                // ÖNEMLİ DEĞİŞİKLİK: SADECE TIKLANAN SPESİFİK KÜPÜ VURGULA
+                // SADECE TIKLANAN KÜPÜ VURGULA
                 clearAllSelections();
                 clickedCube.classList.add('selected');
-                
-                // Aynı mini küpün diğer yüzlerine hafif vurgu
-                highlightSameMiniCube(miniCubeId, true);
                 
             } else {
                 // İKİNCİ SEÇİM
                 const firstSelection = gameState.selectedCube;
                 
                 // Aynı küpe tekrar tıklandıysa seçimi kaldır
-                if (firstSelection.miniCubeId === miniCubeId && firstSelection.face === face) {
+                if (firstSelection.miniCubeId === parseInt(miniCubeId)) {
                     clearAllSelections();
                     gameState.selectedCube = null;
                     return;
                 }
 
-                // EŞLEŞME KONTROLÜ
-                if (firstSelection.animal === animal) {
+                // EŞLEŞME KONTROLÜ - MİNİ KÜP HAYVANLARINI KONTROL ET
+                const firstAnimal = gameState.miniCubeAnimals[firstSelection.miniCubeId];
+                const secondAnimal = gameState.miniCubeAnimals[parseInt(miniCubeId)];
+                
+                console.log("🔍 Eşleşme kontrolü:", firstAnimal, "vs", secondAnimal);
+
+                if (firstAnimal === secondAnimal) {
                     // EŞLEŞME BULUNDU
-                    console.log("🎉 EŞLEŞME BULUNDU! MiniCube ID'ler:", firstSelection.miniCubeId, "ve", miniCubeId);
-                    
-                    // Her iki mini küpü de eşleşmiş olarak işaretle
-                    gameState.cubeData[firstSelection.miniCubeId].matched = true;
-                    gameState.cubeData[miniCubeId].matched = true;
+                    console.log("🎉 EŞLEŞME BULUNDU!");
                     
                     // Her iki mini küpün tüm yüzlerini kaybet
                     hideMatchedMiniCube(firstSelection.miniCubeId);
-                    hideMatchedMiniCube(miniCubeId);
+                    hideMatchedMiniCube(parseInt(miniCubeId));
                     
                     gameState.matches++;
                     gameState.score += 50;
@@ -541,21 +522,6 @@
             document.querySelectorAll('.mini-cube.selected').forEach(cube => {
                 cube.classList.remove('selected');
             });
-            document.querySelectorAll('.mini-cube.same-mini-cube').forEach(cube => {
-                cube.classList.remove('same-mini-cube');
-            });
-        }
-
-        function highlightSameMiniCube(miniCubeId, highlight) {
-            const allFaces = document.querySelectorAll(`.mini-cube[data-mini-cube-id="${miniCubeId}"]`);
-            
-            allFaces.forEach(cube => {
-                if (highlight) {
-                    cube.classList.add('same-mini-cube');
-                } else {
-                    cube.classList.remove('same-mini-cube');
-                }
-            });
         }
 
         function hideMatchedMiniCube(miniCubeId) {
@@ -564,6 +530,8 @@
             allFaces.forEach(cube => {
                 cube.classList.add('matched');
             });
+            
+            console.log(`❌ Mini küp ${miniCubeId} kayboldu`);
         }
 
         function setupDragControls() {
@@ -627,23 +595,42 @@
 
         function showHint() {
             console.log("💡 İpucu butonuna tıklandı");
-            const unmatchedCubes = [];
             
+            // Eşleşmemiş mini küpleri bul
+            const unmatchedPairs = [];
+            const animalCount = {};
+            
+            // Her hayvandan kaç tane eşleşmemiş var say
             for (let i = 0; i < 9; i++) {
-                if (!gameState.cubeData[i]?.matched) {
-                    unmatchedCubes.push(i);
+                const animal = gameState.miniCubeAnimals[i];
+                const isMatched = document.querySelector(`.mini-cube[data-mini-cube-id="${i}"]`).classList.contains('matched');
+                
+                if (!isMatched) {
+                    if (!animalCount[animal]) {
+                        animalCount[animal] = [];
+                    }
+                    animalCount[animal].push(i);
                 }
             }
             
-            if (unmatchedCubes.length > 1) {
-                const randomCubeId = unmatchedCubes[Math.floor(Math.random() * unmatchedCubes.length)];
-                const randomFaceCubes = document.querySelectorAll(`.mini-cube[data-mini-cube-id="${randomCubeId}"]`);
-                if (randomFaceCubes.length > 0) {
-                    randomFaceCubes[0].classList.add('selected');
+            // Eşi olan hayvanları bul
+            for (const animal in animalCount) {
+                if (animalCount[animal].length >= 2) {
+                    unmatchedPairs.push(animalCount[animal]);
+                }
+            }
+            
+            if (unmatchedPairs.length > 0) {
+                const randomPair = unmatchedPairs[Math.floor(Math.random() * unmatchedPairs.length)];
+                const randomCubeId = randomPair[0];
+                const cubes = document.querySelectorAll(`.mini-cube[data-mini-cube-id="${randomCubeId}"]`);
+                
+                if (cubes.length > 0) {
+                    cubes[0].classList.add('selected');
                     
                     setTimeout(() => {
                         if (gameState.selectedCube?.miniCubeId !== randomCubeId) {
-                            randomFaceCubes[0].classList.remove('selected');
+                            cubes[0].classList.remove('selected');
                         }
                     }, 1500);
                 }
