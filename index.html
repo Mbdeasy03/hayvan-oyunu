@@ -48,6 +48,11 @@
             margin: 30px 0;
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
             font-weight: bold;
+            border: 3px solid #FFFFFF;
+        }
+
+        .start-button:hover {
+            transform: scale(1.05);
         }
 
         .footer {
@@ -211,7 +216,7 @@
     <!-- BAŞLANGIÇ EKRANI -->
     <div id="startScreen">
         <h1 class="start-title">🎲 3D Blocks 🎲</h1>
-        <button class="start-button" id="startBtn">OYUNU BAŞLAT</button>
+        <button class="start-button" id="startButton">OYUNU BAŞLAT</button>
         <div class="footer">
             Yapımcı: Mbdeasy03
         </div>
@@ -256,14 +261,16 @@
     </div>
 
     <script>
-        // TAM OYUN KODU - 3D KÜP EŞLEŞTİRME
-        console.log("🎮 3D Blocks Oyunu Yükleniyor...");
+        // TAM OYUN KODU - BUTON KESİN ÇALIŞACAK
+        console.log("=== 3D BLOCKS OYUNU YÜKLENİYOR ===");
 
+        // OYUN AYARLARI
         const gameConfig = {
             animals: ['🦁', '🐯', '🐻', '🐼'],
             cubeFaces: ['front', 'back', 'right', 'left', 'top', 'bottom']
         };
 
+        // OYUN DURUMU
         let gameState = {
             score: 0,
             moves: 0,
@@ -276,15 +283,46 @@
             lastY: 0
         };
 
-        // BUTONU KESİN ÇALIŞTIR
-        document.getElementById('startBtn').addEventListener('click', startGame);
-
-        function startGame() {
-            console.log("🚀 Oyun başlatılıyor...");
+        // === BUTON KESİN ÇALIŞTIRMA ===
+        function initializeButton() {
+            console.log("🔧 Buton hazırlanıyor...");
             
+            const startButton = document.getElementById('startButton');
+            
+            if (!startButton) {
+                console.error("❌ Buton bulunamadı!");
+                return;
+            }
+            
+            console.log("✅ Buton bulundu:", startButton);
+            
+            // 1. YÖNTEM: addEventListener
+            startButton.addEventListener('click', function() {
+                console.log("🎮 BUTON TIKLANDI (addEventListener)");
+                startGame();
+            });
+            
+            // 2. YÖNTEM: onclick attribute
+            startButton.onclick = function() {
+                console.log("🎮 BUTON TIKLANDI (onclick)");
+                startGame();
+            };
+            
+            // Butonu görsel olarak işaretle
+            startButton.style.border = "3px solid #00FF00";
+            console.log("✅ Buton hazır! Yeşil border eklendi.");
+        }
+
+        // OYUNU BAŞLAT
+        function startGame() {
+            console.log("🚀 OYUN BAŞLATILIYOR...");
+            alert("🎉 Oyun başlıyor! Bu bir test mesajı.");
+            
+            // Ekranları değiştir
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'flex';
             
+            // Oyunu başlat
             initializeGame();
         }
 
@@ -299,6 +337,7 @@
             const mainCube = document.getElementById('mainCube');
             mainCube.innerHTML = '';
             
+            // Oyun durumunu sıfırla
             gameState.score = 0;
             gameState.moves = 0;
             gameState.matches = 0;
@@ -479,11 +518,26 @@
             document.getElementById('remainingPairs').textContent = gameState.remainingPairs;
         }
 
-        // SAYFA YÜKLENDİĞİNDE
+        // === SAYFA YÜKLENDİĞİNDE KESİN ÇALIŞTIR ===
         window.onload = function() {
-            console.log("✅ 3D Blocks tamamen yüklendi!");
+            console.log("✅ Sayfa tamamen yüklendi!");
+            initializeButton();
+            
+            // Manuel test için global fonksiyon
+            window.manualStart = function() {
+                console.log("🛠️ Manuel başlatma çağrıldı!");
+                startGame();
+            };
+            
             console.log("👉 'OYUNU BAŞLAT' butonuna tıkla!");
+            console.log("👉 Veya Console'da: manualStart() yaz");
         };
+
+        // DOM hazır olduğunda da çalıştır
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("📄 DOM hazır!");
+            initializeButton();
+        });
     </script>
 </body>
 </html>
