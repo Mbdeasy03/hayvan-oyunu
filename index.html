@@ -56,7 +56,6 @@
   }
   .stat{font-size:13px;color:var(--muted)} .val{font-weight:700;color:var(--accent);margin-left:6px}
 
-  /* small responsive */
   @media(max-width:680px){
     .menuCard{padding:14px}
     #topHUD{left:6px;right:6px;top:6px}
@@ -82,7 +81,7 @@
     </div>
   </div>
 
-  <!-- TOP HUD (only shown in puzzle) -->
+  <!-- TOP HUD -->
   <div id="topHUD">
     <div class="left">
       <div style="font-weight:700">Seviye: <span id="hudLevel">3x3x3</span></div>
@@ -94,7 +93,7 @@
     </div>
   </div>
 
-  <!-- VIEWPORT (three.js canvas appended here) -->
+  <!-- VIEWPORT -->
   <div id="viewport"></div>
 
   <!-- bottom panel -->
@@ -104,498 +103,234 @@
     <div class="stat">Kalan: <span id="hudRemaining" class="val">0</span></div>
   </div>
 
-  <!-- three.js via esm CDN module -->
   <script type="module">
-  import * as THREE from 'https://esm.run/three';
+    import * as THREE from 'https://esm.run/three';
 
-  // ---------- CONFIG ----------
-  const ANIMALS = ["🦁","🐯","🐻","🐼","🐸","🐵","🐶","🐱","🐰","🦊","🦄","🐮","🐷","🐔","🐧","🐭","🐹","🐻‍❄️","🐨","🐺"];
-  const MAX_SAFE_N = 16;
-  const MAX_ALLOWED_N = 30;
+    // ---------- CONFIG ----------
+    const ANIMALS = ["🦁","🐯","🐻","🐼","🐸","🐵","🐶","🐱","🐰","🦊","🦄","🐮","🐷","🐔","🐧","🐭","🐹","🐻‍❄️","🐨","🐺"];
+    const MAX_SAFE_N = 16;
+    const MAX_ALLOWED_N = 30;
 
-  // ---------- DOM ----------
-  const startScreen = document.getElementById('startScreen');
-  const menuStart = document.getElementById('menuStart');
-  const menuLevel = document.getElementById('menuLevel');
-  const menuHow = document.getElementById('menuHow');
-  const topHUD = document.getElementById('topHUD');
-  const hudLevel = document.getElementById('hudLevel');
-  const hudHint = document.getElementById('hudHint');
-  const hudBack = document.getElementById('hudBack');
-  const hudScore = document.getElementById('hudScore');
-  const hudMoves = document.getElementById('hudMoves');
-  const hudMatches = document.getElementById('hudMatches');
-  const hudRemaining = document.getElementById('hudRemaining');
-  const viewport = document.getElementById('viewport');
+    // ---------- DOM ----------
+    const startScreen = document.getElementById('startScreen');
+    const menuStart = document.getElementById('menuStart');
+    const menuLevel = document.getElementById('menuLevel');
+    const menuHow = document.getElementById('menuHow');
+    const topHUD = document.getElementById('topHUD');
+    const hudLevel = document.getElementById('hudLevel');
+    const hudHint = document.getElementById('hudHint');
+    const hudBack = document.getElementById('hudBack');
+    const hudScore = document.getElementById('hudScore');
+    const hudMoves = document.getElementById('hudMoves');
+    const hudMatches = document.getElementById('hudMatches');
+    const hudRemaining = document.getElementById('hudRemaining');
+    const viewport = document.getElementById('viewport');
 
-  // ---------- THREE setup ----------
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 10000);
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.setClearColor(0x071024, 1);
-  viewport.appendChild(renderer.domElement);
+    // ---------- THREE setup ----------
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 10000);
+    const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setClearColor(0x071024, 1);
+    viewport.appendChild(renderer.domElement);
 
-  // lighting
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
-  dirLight.position.set(5,10,7);
-  scene.add(dirLight);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+    scene.add(new THREE.DirectionalLight(0xffffff,0.95).position.set(5,10,7));
+    scene.add(new THREE.AmbientLight(0xffffff,0.45));
 
-  // ---------- game state ----------
-  let N = 3;
-  let grid = null; // grid[x][y][z] = {animal, matched, mesh}
-  let surfaceMeshes = []; // list of meshes currently visible (for raycasting)
-  let selected = null; // {x,y,z}
-  let score = 0, moves = 0, matches = 0, remainingPairs = 0;
-  let cellSize = 1;
+    // ---------- GAME STATE ----------
+    let N = 3;
+    let grid = null;
+    let surfaceMeshes = [];
+    let selected = null;
+    let score = 0, moves = 0, matches = 0, remainingPairs = 0;
+    let cellSize = 1;
 
-  // camera control state (improved mapping)
-  let isPointerDown = false;
-  let pointers = new Map(); // track multi-pointer for pinch
-  let lastMid = null;
-  let rotX = -25, rotY = 25;
-  let distance = 12; // zoom distance
+    // ---------- CAMERA CONTROL ----------
+    let rotX=-25, rotY=25, distance=12;
+    let isPointerDown=false, pointers=new Map(), prevX=0, prevY=0, prevDist=0, isZoom=false;
 
-  function updateCamera(){
-    const rX = THREE.MathUtils.degToRad(rotX);
-    const rY = THREE.MathUtils.degToRad(rotY);
-    const rad = Math.max(6, distance);
-    camera.position.x = rad * Math.sin(rY) * Math.cos(rX);
-    camera.position.y = rad * Math.sin(rX);
-    camera.position.z = rad * Math.cos(rY) * Math.cos(rX);
-    camera.lookAt(0,0,0);
-  }
-  updateCamera();
-
-  // raycaster
-  const raycaster = new THREE.Raycaster();
-  const pointer = new THREE.Vector2();
-
-  // material cache
-  const materialCache = new Map();
-  function createEmojiTexture(emoji){
-    const size = 256;
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,size,size);
-    ctx.font = `${size * 0.7}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#000';
-    ctx.fillText(emoji, size/2+2, size/2+2);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(emoji, size/2, size/2);
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.minFilter = THREE.LinearFilter;
-    return tex;
-  }
-  function getMaterials(emoji){
-    if(materialCache.has(emoji)) return materialCache.get(emoji);
-    const tex = createEmojiTexture(emoji);
-    const mat = new THREE.MeshLambertMaterial({map:tex});
-    // give small emissive property for selection highlight
-    mat.emissive = new THREE.Color(0x000000);
-    const mats = [mat,mat,mat,mat,mat,mat];
-    materialCache.set(emoji, mats);
-    return mats;
-  }
-
-  // helpers
-  function inRange(x){ return x>=0 && x<N; }
-  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
-
-  // is exposed: any neighbor out of bounds or neighbor matched -> exposed
-  function isExposed(x,y,z){
-    const neigh = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
-    for(const [dx,dy,dz] of neigh){
-      const nx=x+dx, ny=y+dy, nz=z+dz;
-      if(!inRange(nx) || !inRange(ny) || !inRange(nz)) return true;
-      const nb = grid[nx][ny][nz];
-      if(!nb || nb.matched) return true;
+    function updateCamera(){
+      const rX = THREE.MathUtils.degToRad(rotX);
+      const rY = THREE.MathUtils.degToRad(rotY);
+      const rad = Math.max(6,distance);
+      camera.position.x = rad * Math.sin(rY) * Math.cos(rX);
+      camera.position.y = rad * Math.sin(rX);
+      camera.position.z = rad * Math.cos(rY) * Math.cos(rX);
+      camera.lookAt(0,0,0);
     }
-    return false;
-  }
 
-  // create mesh for every cell at init, but set visible only when exposed
-  function createAllMeshes(){
-    // clear old meshes
-    for(const m of surfaceMeshes){ scene.remove(m); try{ m.geometry.dispose(); }catch(e){} }
-    surfaceMeshes.length = 0;
+    function animate(){ requestAnimationFrame(animate); renderer.render(scene,camera); }
+    animate();
 
-    const half = ((N-1)/2) * cellSize;
-    for(let x=0;x<N;x++){
-      for(let y=0;y<N;y++){
-        for(let z=0;z<N;z++){
-          const c = grid[x][y][z];
-          const g = new THREE.BoxGeometry(cellSize,cellSize,cellSize);
-          const mats = getMaterials(c.animal);
-          const mesh = new THREE.Mesh(g, mats);
-          mesh.position.set((x*cellSize)-half, ((N-1-y)*cellSize)-half, (z*cellSize)-half);
-          mesh.userData.pos = {x,y,z};
-          mesh.userData.emoji = c.animal;
-          mesh.visible = false; // default hidden
-          scene.add(mesh);
-          c.mesh = mesh;
+    // ---------- MATERIALS ----------
+    const materialCache = new Map();
+    function createEmojiTexture(emoji){
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,size,size);
+      ctx.font = `${size*0.7}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#000';
+      ctx.fillText(emoji,size/2+2,size/2+2);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(emoji,size/2,size/2);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.minFilter = THREE.LinearFilter;
+      return tex;
+    }
+    function getMaterials(emoji){
+      if(materialCache.has(emoji)) return materialCache.get(emoji);
+      const tex=createEmojiTexture(emoji);
+      const mat=new THREE.MeshLambertMaterial({map:tex});
+      mat.emissive=new THREE.Color(0x000000);
+      const mats=[mat,mat,mat,mat,mat,mat];
+      materialCache.set(emoji,mats);
+      return mats;
+    }
+
+    // ---------- HELPERS ----------
+    function inRange(x){ return x>=0 && x<N; }
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+    function isExposed(x,y,z){
+      const neigh=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+      for(const [dx,dy,dz] of neigh){
+        const nx=x+dx, ny=y+dy, nz=z+dz;
+        if(!inRange(nx)||!inRange(ny)||!inRange(nz)) return true;
+        const nb=grid[nx][ny][nz];
+        if(!nb||nb.matched) return true;
+      }
+      return false;
+    }
+
+    function createAllMeshes(){
+      for(const m of surfaceMeshes){ scene.remove(m); try{m.geometry.dispose();}catch(e){}}
+      surfaceMeshes.length=0;
+      const half=((N-1)/2)*cellSize;
+      for(let x=0;x<N;x++) for(let y=0;y<N;y++) for(let z=0;z<N;z++){
+        const c=grid[x][y][z];
+        const g=new THREE.BoxGeometry(cellSize,cellSize,cellSize);
+        const mats=getMaterials(c.animal);
+        const mesh=new THREE.Mesh(g,mats);
+        mesh.position.set((x*cellSize)-half,((N-1-y)*cellSize)-half,(z*cellSize)-half);
+        mesh.userData.pos={x,y,z};
+        mesh.userData.emoji=c.animal;
+        mesh.visible=false;
+        scene.add(mesh);
+        c.mesh=mesh;
+      }
+      for(let x=0;x<N;x++) for(let y=0;y<N;y++) for(let z=0;z<N;z++){
+        if(isExposed(x,y,z)&&!grid[x][y][z].matched){
+          grid[x][y][z].mesh.visible=true;
+          surfaceMeshes.push(grid[x][y][z].mesh);
         }
       }
     }
 
-    // reveal surface
-    for(let x=0;x<N;x++) for(let y=0;y<N;y++) for(let z=0;z<N;z++){
-      if(isExposed(x,y,z) && !grid[x][y][z].matched){
-        grid[x][y][z].mesh.visible = true;
-        surfaceMeshes.push(grid[x][y][z].mesh);
-      }
-    }
-  }
-
-  function revealNeighbors(x,y,z){
-    const neigh = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
-    for(const [dx,dy,dz] of neigh){
-      const nx=x+dx, ny=y+dy, nz=z+dz;
-      if(inRange(nx) && inRange(ny) && inRange(nz)){
-        const cell = grid[nx][ny][nz];
-        if(cell && !cell.matched && !cell.mesh.visible && isExposed(nx,ny,nz)){
-          cell.mesh.visible = true;
-          surfaceMeshes.push(cell.mesh);
+    function revealNeighbors(x,y,z){
+      const neigh=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+      for(const [dx,dy,dz] of neigh){
+        const nx=x+dx, ny=y+dy, nz=z+dz;
+        if(inRange(nx)&&inRange(ny)&&inRange(nz)){
+          const cell=grid[nx][ny][nz];
+          if(cell&&!cell.matched&&!cell.mesh.visible&&isExposed(nx,ny,nz)){
+            cell.mesh.visible=true;
+            surfaceMeshes.push(cell.mesh);
+          }
         }
       }
     }
-  }
 
-  function removeCell(x,y,z){
-    const c = grid[x][y][z];
-    if(!c || c.matched) return;
-    c.matched = true;
-    // animate scale down then hide
-    if(c.mesh){
-      const m = c.mesh;
-      const start = performance.now();
-      const dur = 280;
-      (function anim(){
-        const t = (performance.now()-start)/dur;
-        if(t<1){
-          const s = 1 - t;
-          m.scale.setScalar(s);
-          requestAnimationFrame(anim);
-        } else {
-          m.visible = false;
-          m.scale.setScalar(1);
-        }
-      })();
-      // remove from surfaceMeshes list
-      const i = surfaceMeshes.indexOf(m);
-      if(i>=0) surfaceMeshes.splice(i,1);
+    function removeCell(x,y,z){
+      const c=grid[x][y][z];
+      if(!c||c.matched) return;
+      c.matched=true;
+      if(c.mesh){
+        const m=c.mesh, start=performance.now(), dur=280;
+        (function anim(){
+          const t=(performance.now()-start)/dur;
+          if(t<1){ m.scale.setScalar(1-t); requestAnimationFrame(anim);}
+          else{ m.visible=false; m.scale.setScalar(1);}
+        })();
+        const i=surfaceMeshes.indexOf(m);
+        if(i>=0) surfaceMeshes.splice(i,1);
+      }
     }
-  }
 
-  // ---------- level init ----------
-  function initLevel(n){
-    // cleanup scene (keep lights)
-    scene.children.slice().forEach(ch=>{
-      if(ch.type !== 'DirectionalLight' && ch.type !== 'AmbientLight') scene.remove(ch);
+    function initLevel(n){
+      scene.children.slice().forEach(ch=>{if(ch.type!=='DirectionalLight'&&ch.type!=='AmbientLight') scene.remove(ch);});
+      N=Math.max(2,Math.min(MAX_ALLOWED_N,Math.floor(n)));
+      const total=N*N*N;
+      const pairCount=Math.floor(total/2);
+      const list=[];
+      for(let i=0;i<pairCount;i++){ const ani=ANIMALS[i%ANIMALS.length]; list.push(ani,ani);}
+      if(total%2===1) list.push(ANIMALS[Math.floor(Math.random()*ANIMALS.length)]);
+      shuffle(list);
+
+      grid=[]; let idx=0;
+      for(let x=0;x<N;x++){ grid[x]=[]; for(let y=0;y<N;y++){ grid[x][y]=[]; for(let z=0;z<N;z++){ grid[x][y][z]={animal:list[idx++]||ANIMALS[0],matched:false,mesh:null}; } } }
+
+      const minDim=Math.min(innerWidth,innerHeight)*0.85;
+      cellSize=Math.max(0.8,Math.min(1.5,(minDim/(N*60))*2.2));
+      score=0; moves=0; matches=0; remainingPairs=Math.floor(total/2); selected=null;
+      createAllMeshes();
+      distance=Math.max(6,N*cellSize*1.6);
+      updateCamera();
+
+      hudLevel.textContent=`${N}x${N}x${N}`;
+      hudScore.textContent=score;
+      hudMoves.textContent=moves;
+      hudMatches.textContent=matches;
+      hudRemaining.textContent=remainingPairs;
+      topHUD.style.display='flex';
+      startScreen.style.display='none';
+
+      if(N>MAX_SAFE_N) alert(`Uyarı: Seviye n=${N} büyük ve tarayıcınız yavaşlayabilir. Tavsiye: 3..16 arası test edin.`);
+    }
+
+    // ---------- POINTER CONTROLS ----------
+    renderer.domElement.addEventListener('pointerdown',e=>{
+      renderer.domElement.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId,e);
+      if(pointers.size===1){ isPointerDown=true; prevX=e.clientX; prevY=e.clientY; isZoom=false; }
+      else if(pointers.size===2){
+        const it=pointers.values(); const a=it.next().value, b=it.next().value;
+        prevDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+        isZoom=true;
+      }
     });
 
-    N = Math.max(2, Math.min(MAX_ALLOWED_N, Math.floor(n)));
-    // prepare pairing list
-    const total = N*N*N;
-    const pairCount = Math.floor(total/2);
-    const list = [];
-    for(let i=0;i<pairCount;i++){
-      const ani = ANIMALS[i % ANIMALS.length];
-      list.push(ani,ani);
-    }
-    if(total % 2 === 1) list.push(ANIMALS[Math.floor(Math.random()*ANIMALS.length)]);
-    shuffle(list);
-
-    // build grid data
-    grid = [];
-    let idx = 0;
-    for(let x=0;x<N;x++){
-      grid[x]=[];
-      for(let y=0;y<N;y++){
-        grid[x][y]=[];
-        for(let z=0;z<N;z++){
-          grid[x][y][z] = { animal: list[idx++] || ANIMALS[0], matched:false, mesh:null };
-        }
-      }
-    }
-
-    // compute cell size to fit viewport
-    const minDim = Math.min(innerWidth, innerHeight) * 0.85;
-    cellSize = Math.max(0.8, Math.min(1.5, (minDim / (N*60)) * 2.2)); // tuned to look good
-    // reset stats
-    score=0; moves=0; matches=0; remainingPairs = Math.floor(total/2);
-    selected = null;
-
-    // create all meshes (but only surface visible)
-    createAllMeshes();
-
-    // camera distance
-    distance = Math.max(6, N * cellSize * 1.6);
-    updateCamera();
-    // UI update
-    hudLevel.textContent = `${N}x${N}x${N}`;
-    hudScore.textContent = score;
-    hudMoves.textContent = moves;
-    hudMatches.textContent = matches;
-    hudRemaining.textContent = remainingPairs;
-    topHUD.style.display = 'flex';
-    startScreen.style.display = 'none';
-
-    if(N > MAX_SAFE_N){
-      alert(`Uyarı: Seviye n=${N} büyük ve tarayıcınız yavaşlayabilir. Tavsiye: 3..16 arası test edin.`);
-    }
-  }
-
-  // ---------- pointer & zoom handling ----------
-  function getMidpoint(a,b){
-    return { x:(a.clientX + b.clientX)/2, y:(a.clientY + b.clientY)/2 };
-  }
-
-  renderer.domElement.addEventListener('pointerdown', (e)=>{
-    renderer.domElement.setPointerCapture(e.pointerId);
-    pointers.set(e.pointerId, e);
-    if(pointers.size === 1){
-      // single pointer start
-      isPointerDown = true;
-      lastMid = {x:e.clientX, y:e.clientY};
-    } else if(pointers.size === 2){
-      // pinch start
-      const it = pointers.values();
-      const a = it.next().value, b = it.next().value;
-      lastMid = getMidpoint(a,b);
-    }
-  });
-
-  renderer.domElement.addEventListener('pointermove', (e)=>{
-    if(!pointers.has(e.pointerId)) return;
-    pointers.set(e.pointerId, e);
-    if(pointers.size === 1 && isPointerDown){
-      // rotate: horizontal -> rotY, vertical -> rotX
-      const cur = e;
-      const dx = cur.clientX - lastMid.x;
-      const dy = cur.clientY - lastMid.y;
-      rotY += dx * 0.18;
-      rotX += dy * 0.18;
-      rotX = Math.max(-85, Math.min(85, rotX));
-      lastMid = {x:cur.clientX, y:cur.clientY};
-      updateCamera();
-    } else if(pointers.size === 2){
-      // pinch zoom and rotate around midpoint
-      const it = pointers.values();
-      const a = it.next().value, b = it.next().value;
-      const curMid = getMidpoint(a,b);
-      // distance change
-      const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY;
-      const curDist = Math.hypot(dx,dy);
-      if(!renderer.userData.startPinchDist){
-        renderer.userData.startPinchDist = curDist;
-        renderer.userData.startDistance = distance;
-      } else {
-        const diff = renderer.userData.startPinchDist - curDist;
-        distance = renderer.userData.startDistance + diff * 0.06;
-        distance = Math.max(4, Math.min(120, distance));
+    renderer.domElement.addEventListener('pointermove',e=>{
+      if(!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId,e);
+      if(pointers.size===1 && !isZoom && isPointerDown){
+        const dx=e.clientX-prevX; const dy=e.clientY-prevY;
+        rotY+=dx*0.18; rotX+=dy*0.18;
+        rotX=Math.max(-85,Math.min(85,rotX));
+        prevX=e.clientX; prevY=e.clientY;
+        updateCamera();
+      } else if(pointers.size===2){
+        const it=pointers.values(); const a=it.next().value, b=it.next().value;
+        const dist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+        distance+=(prevDist-dist)*0.05;
+        distance=Math.max(4,Math.min(120,distance));
+        prevDist=dist;
         updateCamera();
       }
-      lastMid = curMid;
-    }
-  });
+    });
 
-  renderer.domElement.addEventListener('pointerup', (e)=>{
-    pointers.delete(e.pointerId);
-    renderer.domElement.releasePointerCapture(e.pointerId);
-    if(pointers.size === 0){
-      isPointerDown = false;
-      renderer.userData.startPinchDist = null;
-    }
-  });
+    renderer.domElement.addEventListener('pointerup',e=>{
+      pointers.delete(e.pointerId); renderer.domElement.releasePointerCapture(e.pointerId);
+      if(pointers.size===0){isPointerDown=false;}
+    });
 
-  // wheel zoom
-  window.addEventListener('wheel', (e)=>{
-    distance += e.deltaY * 0.02;
-    distance = Math.max(4, Math.min(120, distance));
-    updateCamera();
-  }, {passive:true});
+    window.addEventListener('wheel', e=>{ distance+=e.deltaY*0.02; distance=Math.max(4,Math.min(120,distance)); updateCamera(); }, {passive:true});
 
-  // ---------- picking & gameplay ----------
-  function pickIntersect(clientX, clientY){
-    const rect = renderer.domElement.getBoundingClientRect();
-    pointer.x = ((clientX - rect.left)/rect.width) * 2 - 1;
-    pointer.y = -((clientY - rect.top)/rect.height) * 2 + 1;
-    raycaster.setFromCamera(pointer, camera);
-    const inter = raycaster.intersectObjects(surfaceMeshes, false);
-    return inter.length ? inter[0].object : null;
-  }
-
-  renderer.domElement.addEventListener('click', (e)=>{
-    // if drag happened recently, ignore click? we keep simple: pick on click
-    const m = pickIntersect(e.clientX, e.clientY);
-    if(!m) return;
-    const p = m.userData.pos;
-    handleClickCell(p.x, p.y, p.z);
-  });
-
-  function clearSelectionHighlight(){
-    if(!selected) return;
-    const cell = grid[selected.x][selected.y][selected.z];
-    if(cell && cell.mesh){
-      cell.mesh.material.forEach(mat=>{
-        if(mat.emissive) mat.emissive.setHex(0x000000);
-      });
-    }
-  }
-
-  function handleClickCell(x,y,z){
-    const cell = grid[x][y][z];
-    if(!cell || cell.matched) return;
-    // select first
-    if(!selected){
-      selected = {x,y,z, animal:cell.animal};
-      // highlight only this mesh
-      if(cell.mesh){
-        cell.mesh.material.forEach(mat => mat.emissive && mat.emissive.setHex(0x444400));
-      }
-      playTone(520,0.06);
-      return;
-    }
-    // clicked same -> deselect
-    if(selected.x===x && selected.y===y && selected.z===z){
-      clearSelectionHighlight();
-      selected = null;
-      return;
-    }
-    // second selection -> evaluate
-    moves++;
-    hudMoves.textContent = moves;
-    const first = selected;
-    const second = {x,y,z, animal:cell.animal};
-    if(first.animal === second.animal){
-      // match
-      matches++;
-      score += 50;
-      remainingPairs = Math.max(0, remainingPairs - 1);
-      hudMatches.textContent = matches;
-      hudScore.textContent = score;
-      hudRemaining.textContent = remainingPairs;
-      // remove both
-      removeCell(first.x, first.y, first.z);
-      removeCell(second.x, second.y, second.z);
-      // reveal neighbors
-      revealNeighbors(first.x, first.y, first.z);
-      revealNeighbors(second.x, second.y, second.z);
-      playTone(880,0.12);
-    } else {
-      playTone(260,0.08);
-      // un-highlight first
-      clearSelectionHighlight();
-    }
-    selected = null;
-    // win condition
-    if(remainingPairs === 0){
-      setTimeout(()=> {
-        // auto clear any leftover single cube
-        for(let xx=0;xx<N;xx++) for(let yy=0;yy<N;yy++) for(let zz=0;zz<N;zz++){
-          const c = grid[xx][yy][zz];
-          if(c && !c.matched){ removeCell(xx,yy,zz); }
-        }
-        setTimeout(()=> {
-          alert(`🏆 Seviye tamamlandı!\nPuan: ${score}\nHamle: ${moves}`);
-        }, 400);
-      }, 600);
-    }
-  }
-
-  // ---------- hint (find a visible pair) ----------
-  function showHint(){
-    // group visible by animal
-    const map = new Map();
-    for(const m of surfaceMeshes){
-      if(!m.visible) continue;
-      const p = m.userData.pos;
-      const c = grid[p.x][p.y][p.z];
-      if(!c || c.matched) continue;
-      const arr = map.get(c.animal) || [];
-      arr.push(m);
-      map.set(c.animal, arr);
-    }
-    for(const [ani, arr] of map){
-      if(arr.length >= 2){
-        const a = arr[0], b = arr[1];
-        a.material.forEach(mat=> mat.emissive && mat.emissive.setHex(0x884400));
-        b.material.forEach(mat=> mat.emissive && mat.emissive.setHex(0x884400));
-        setTimeout(()=> { a.material.forEach(mat=> mat.emissive && mat.emissive.setHex(0x000000)); b.material.forEach(mat=> mat.emissive && mat.emissive.setHex(0x000000)); }, 900);
-        playTone(660,0.14);
-        return;
-      }
-    }
-    // fallback pulse any one
-    if(surfaceMeshes.length>0){
-      const m = surfaceMeshes[Math.floor(Math.random()*surfaceMeshes.length)];
-      m.material.forEach(mat=> mat.emissive && mat.emissive.setHex(0x884400));
-      setTimeout(()=> m.material.forEach(mat=> mat.emissive && mat.emissive.setHex(0x000000)),900);
-      playTone(440,0.12);
-    }
-  }
-
-  // ---------- sounds ----------
-  const audioCtx = (typeof AudioContext !== 'undefined') ? new AudioContext() : null;
-  let soundOn = true;
-  function playTone(freq,dur=0.08){
-    if(!soundOn || !audioCtx) return;
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type='sine'; o.frequency.value = freq;
-    g.gain.value = 0.0001;
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime+dur);
-    setTimeout(()=> o.stop(), dur*1000+20);
-  }
-
-  // ---------- UI wiring ----------
-  menuStart.addEventListener('click', ()=>{
-    const n = Number(menuLevel.value || 3);
-    if(n < 2){ alert('Lütfen n >= 2 girin'); return; }
-    initLevel(n);
-  });
-  menuHow.addEventListener('click', ()=> {
-    alert('Nasıl oynanır:\n\n- Amaç: aynı hayvanı bulup eşleştirmek.\n- Sadece seçtiğiniz küp vurgulanır; diğer aynı hayvanlar yanmaz.\n- Dış yüzeyleri eşleştirince içtekiler görünür hale gelir.\n- Tek parmak sürükle: döndürme (yatay->Y ekseni, dikey->X ekseni). İki parmak: pinch zoom.\n');
-  });
-  hudHint.addEventListener('click', showHint);
-  hudBack.addEventListener('click', ()=> { location.reload(); });
-
-  // ---------- animation loop ----------
-  (function animate(){
-    requestAnimationFrame(animate);
-    // slight auto rotate when user not interacting
-    if(!isPointerDown && pointers.size===0){
-      rotY += 0.01;
-      updateCamera();
-    }
-    renderer.render(scene, camera);
-  })();
-
-  // handle resize
-  window.addEventListener('resize', ()=>{
-    camera.aspect = innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-  });
-
-  // ---------- init default view (show menu) ----------
-  topHUD.style.display = 'none';
-  // viewport already present; startScreen visible by default
-
-  // expose helpers for debug
-  window.__3d = {
-    initLevel,
-    scene,
-    grid
-  };
+    // ---------- START BUTTON ----------
+    menuStart.addEventListener('click',()=>{ const n=Number(menuLevel.value||3); if(n<2){alert('Lütfen n >= 2 girin'); return;} initLevel(n); });
+    menuHow.addEventListener('click',()=>{ alert('Nasıl oynanır:\n- Amaç: aynı hayvanı bulup eşleştirmek.\n- Dış yüzeyleri eşleştirince içtekiler görünür.\n- Tek parmak sürükleme: döndürme.\n- İki parmak pinch: yakınlaştırma.'); });
   </script>
 </body>
 </html>
