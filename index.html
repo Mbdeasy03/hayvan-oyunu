@@ -12,46 +12,20 @@
   --muted:rgba(255,255,255,0.75);
 }
 *{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Inter,system-ui,Arial,sans-serif;
-  background:linear-gradient(180deg,var(--bg) 0%, #041221 100%);
-  color:#fff;
-  height:100vh;
-  overflow:hidden;
-}
-#startScreen{
-  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.6));
-  z-index:20;
-}
-.menuCard{
-  width:min(720px,94vw);
-  background:var(--panel);padding:20px;border-radius:14px;backdrop-filter:blur(6px);
-  box-shadow:0 8px 30px rgba(0,0,0,0.6);text-align:center;
-}
+body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,var(--bg) 0%, #041221 100%);color:#fff;height:100vh;overflow:hidden;}
+#startScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.6));z-index:20;}
+.menuCard{width:min(720px,94vw);background:var(--panel);padding:20px;border-radius:14px;backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(0,0,0,0.6);text-align:center;}
 .menuRow{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px}
 input[type=number]{width:100px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff}
 button{padding:10px 14px;border-radius:8px;border:none;cursor:pointer;background:linear-gradient(90deg,#4caf50,#2e8b57);color:#fff;font-weight:600}
 .muted{color:var(--muted);font-size:13px;margin-top:8px}
-#topHUD{
-  position:fixed;left:12px;right:12px;top:12px;z-index:15;display:none;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-}
+#topHUD{position:fixed;left:12px;right:12px;top:12px;z-index:15;display:none;display:flex;align-items:center;justify-content:space-between;gap:12px;}
 #topHUD .left, #topHUD .right{display:flex;gap:8px;align-items:center}
 .smallBtn{padding:8px 10px;border-radius:8px;border:none;background:rgba(255,255,255,0.06);color:#fff;cursor:pointer}
-#viewport{
-  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-}
-#bottomPanel{
-  position:fixed;left:12px;bottom:12px;padding:10px;border-radius:10px;background:var(--panel);display:flex;gap:10px;align-items:center;z-index:12;
-}
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+#bottomPanel{position:fixed;left:12px;bottom:12px;padding:10px;border-radius:10px;background:var(--panel);display:flex;gap:10px;align-items:center;z-index:12;}
 .stat{font-size:13px;color:var(--muted)} .val{font-weight:700;color:var(--accent);margin-left:6px}
-@media(max-width:680px){
-  .menuCard{padding:14px}
-  #topHUD{left:6px;right:6px;top:6px}
-  #bottomPanel{left:6px;right:6px;bottom:6px}
-}
+@media(max-width:680px){.menuCard{padding:14px}#topHUD{left:6px;right:6px;top:6px}#bottomPanel{left:6px;right:6px;bottom:6px}}
 </style>
 </head>
 <body>
@@ -93,128 +67,109 @@ button{padding:10px 14px;border-radius:8px;border:none;cursor:pointer;background
 <script type="module">
 import * as THREE from 'https://esm.run/three';
 
-// ---------- CONFIG ----------
-const ANIMALS = ["🦁","🐯","🐻","🐼","🐸","🐵","🐶","🐱","🐰","🦊","🦄","🐮","🐷","🐔","🐧","🐭","🐹","🐻‍❄️","🐨","🐺"];
-const MAX_SAFE_N = 16;
-const MAX_ALLOWED_N = 30;
+// --- CONFIG ---
+const ANIMALS=["🦁","🐯","🐻","🐼","🐸","🐵","🐶","🐱","🐰","🦊","🦄","🐮","🐷","🐔","🐧","🐭","🐹","🐻‍❄️","🐨","🐺"];
+const MAX_SAFE_N=16, MAX_ALLOWED_N=30;
 
-// ---------- DOM ----------
-const startScreen = document.getElementById('startScreen');
-const menuStart = document.getElementById('menuStart');
-const menuLevel = document.getElementById('menuLevel');
-const menuHow = document.getElementById('menuHow');
-const topHUD = document.getElementById('topHUD');
-const hudLevel = document.getElementById('hudLevel');
-const hudHint = document.getElementById('hudHint');
-const hudBack = document.getElementById('hudBack');
-const hudScore = document.getElementById('hudScore');
-const hudMoves = document.getElementById('hudMoves');
-const hudMatches = document.getElementById('hudMatches');
-const hudRemaining = document.getElementById('hudRemaining');
-const viewport = document.getElementById('viewport');
+// --- DOM ---
+const startScreen=document.getElementById('startScreen');
+const menuStart=document.getElementById('menuStart');
+const menuLevel=document.getElementById('menuLevel');
+const menuHow=document.getElementById('menuHow');
+const topHUD=document.getElementById('topHUD');
+const hudLevel=document.getElementById('hudLevel');
+const hudHint=document.getElementById('hudHint');
+const hudBack=document.getElementById('hudBack');
+const hudScore=document.getElementById('hudScore');
+const hudMoves=document.getElementById('hudMoves');
+const hudMatches=document.getElementById('hudMatches');
+const hudRemaining=document.getElementById('hudRemaining');
+const viewport=document.getElementById('viewport');
 
-// ---------- THREE setup ----------
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 10000);
-const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-renderer.setSize(innerWidth, innerHeight);
+// --- THREE ---
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,10000);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setSize(innerWidth,innerHeight);
 viewport.appendChild(renderer.domElement);
-
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
+const dirLight=new THREE.DirectionalLight(0xffffff,0.95);
 dirLight.position.set(5,10,7);
 scene.add(dirLight);
 scene.add(new THREE.AmbientLight(0xffffff,0.45));
 
-// ---------- game state ----------
-let N = 3, grid=null, surfaceMeshes=[], selected=null;
+// --- GAME STATE ---
+let N=3, grid=null, surfaceMeshes=[], selected=null;
 let score=0, moves=0, matches=0, remainingPairs=0, cellSize=1;
 
-// ---------- CAMERA CONTROL ----------
+// --- CAMERA CONTROL ---
 let rotX=-25, rotY=25, distance=12;
 function updateCamera(){
-    const radX = THREE.MathUtils.degToRad(rotX);
-    const radY = THREE.MathUtils.degToRad(rotY);
-    const rad = Math.max(6,distance);
-    camera.position.x = rad * Math.sin(radY) * Math.cos(radX);
-    camera.position.y = rad * Math.sin(radX);
-    camera.position.z = rad * Math.cos(radY) * Math.cos(radX);
+    const rX=THREE.MathUtils.degToRad(rotX);
+    const rY=THREE.MathUtils.degToRad(rotY);
+    const rad=Math.max(6,distance);
+    camera.position.x=rad*Math.sin(rY)*Math.cos(rX);
+    camera.position.y=rad*Math.sin(rX);
+    camera.position.z=rad*Math.cos(rY)*Math.cos(rX);
     camera.lookAt(0,0,0);
 }
-updateCamera();
 
-// raycaster
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
-
-// material cache
-const materialCache = new Map();
+// --- MATERIALS ---
+const materialCache=new Map();
 function createEmojiTexture(emoji){
     const size=256;
-    const canvas=document.createElement('canvas');
-    canvas.width=canvas.height=size;
+    const canvas=document.createElement('canvas'); canvas.width=canvas.height=size;
     const ctx=canvas.getContext('2d');
     ctx.clearRect(0,0,size,size);
-    ctx.font = `${size*0.7}px serif`;
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillStyle='#000';
-    ctx.fillText(emoji, size/2+2,size/2+2);
-    ctx.fillStyle='#fff';
-    ctx.fillText(emoji,size/2,size/2);
-    const tex=new THREE.CanvasTexture(canvas);
-    tex.minFilter = THREE.LinearFilter;
+    ctx.font=`${size*0.7}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='#000'; ctx.fillText(emoji,size/2+2,size/2+2);
+    ctx.fillStyle='#fff'; ctx.fillText(emoji,size/2,size/2);
+    const tex=new THREE.CanvasTexture(canvas); tex.minFilter=THREE.LinearFilter;
     return tex;
 }
 function getMaterials(emoji){
     if(materialCache.has(emoji)) return materialCache.get(emoji);
-    const tex = createEmojiTexture(emoji);
-    const mat = new THREE.MeshLambertMaterial({map:tex});
-    mat.emissive = new THREE.Color(0x000000);
+    const tex=createEmojiTexture(emoji);
+    const mat=new THREE.MeshLambertMaterial({map:tex});
+    mat.emissive=new THREE.Color(0x000000);
     const mats=[mat,mat,mat,mat,mat,mat];
-    materialCache.set(emoji,mats);
-    return mats;
+    materialCache.set(emoji,mats); return mats;
 }
 
-// ---------- HELPERS ----------
-function inRange(x){ return x>=0 && x<N; }
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+// --- HELPERS ---
+function inRange(x){return x>=0&&x<N;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
 function isExposed(x,y,z){
     const neigh=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
     for(const [dx,dy,dz] of neigh){
         const nx=x+dx, ny=y+dy, nz=z+dz;
-        if(!inRange(nx) || !inRange(ny) || !inRange(nz)) return true;
+        if(!inRange(nx)||!inRange(ny)||!inRange(nz)) return true;
         const nb=grid[nx][ny][nz];
-        if(!nb || nb.matched) return true;
+        if(!nb||nb.matched) return true;
     }
     return false;
 }
 
-// ---------- MESH CREATION ----------
+// --- CREATE MESHES ---
 function createAllMeshes(){
     for(const m of surfaceMeshes){ scene.remove(m); try{ m.geometry.dispose(); }catch(e){} }
     surfaceMeshes.length=0;
     const half=((N-1)/2)*cellSize;
     for(let x=0;x<N;x++){
-        grid[x].forEach((col,y)=>{
-            col.forEach((c,z)=>{
-                const g=new THREE.BoxGeometry(cellSize,cellSize,cellSize);
-                const mats=getMaterials(c.animal);
-                const mesh=new THREE.Mesh(g,mats);
-                mesh.position.set((x*cellSize)-half, ((N-1-y)*cellSize)-half, (z*cellSize)-half);
-                mesh.userData.pos={x,y,z};
-                mesh.userData.emoji=c.animal;
-                mesh.visible=false;
-                scene.add(mesh);
-                c.mesh=mesh;
-            });
-        });
+        grid[x].forEach((col,y)=>col.forEach((c,z)=>{
+            const g=new THREE.BoxGeometry(cellSize,cellSize,cellSize);
+            const mats=getMaterials(c.animal);
+            const mesh=new THREE.Mesh(g,mats);
+            mesh.position.set((x*cellSize)-half, ((N-1-y)*cellSize)-half, (z*cellSize)-half);
+            mesh.userData.pos={x,y,z}; mesh.userData.emoji=c.animal; mesh.visible=false;
+            scene.add(mesh); c.mesh=mesh;
+        }));
     }
     for(let x=0;x<N;x++) grid[x].forEach((col,y)=>col.forEach((c,z)=>{
-        if(isExposed(x,y,z) && !c.matched){ c.mesh.visible=true; surfaceMeshes.push(c.mesh); }
+        if(isExposed(x,y,z)&&!c.matched){c.mesh.visible=true;surfaceMeshes.push(c.mesh);}
     }));
 }
 
-// Reveal neighbors
+// --- REVEAL NEIGHBORS ---
 function revealNeighbors(x,y,z){
     const neigh=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
     for(const [dx,dy,dz] of neigh){
@@ -222,126 +177,71 @@ function revealNeighbors(x,y,z){
         if(inRange(nx)&&inRange(ny)&&inRange(nz)){
             const cell=grid[nx][ny][nz];
             if(cell&&!cell.matched&&!cell.mesh.visible&&isExposed(nx,ny,nz)){
-                cell.mesh.visible=true;
-                surfaceMeshes.push(cell.mesh);
+                cell.mesh.visible=true; surfaceMeshes.push(cell.mesh);
             }
         }
     }
 }
 
-// Remove cell
+// --- REMOVE CELL ---
 function removeCell(x,y,z){
-    const c=grid[x][y][z];
-    if(!c||c.matched) return;
+    const c=grid[x][y][z]; if(!c||c.matched) return;
     c.matched=true;
     if(c.mesh){
-        const m=c.mesh;
-        const start=performance.now();
-        const dur=280;
-        (function anim(){
-            const t=(performance.now()-start)/dur;
-            if(t<1){
-                const s=1-t;
-                m.scale.setScalar(s);
-                requestAnimationFrame(anim);
-            } else { m.visible=false; m.scale.setScalar(1); }
-        })();
-        const i=surfaceMeshes.indexOf(m);
-        if(i>=0) surfaceMeshes.splice(i,1);
+        const m=c.mesh, start=performance.now(), dur=280;
+        (function anim(){const t=(performance.now()-start)/dur;if(t<1){m.scale.setScalar(1-t);requestAnimationFrame(anim);}else{m.visible=false;m.scale.setScalar(1);}})();
+        const i=surfaceMeshes.indexOf(m); if(i>=0) surfaceMeshes.splice(i,1);
     }
 }
 
-// ---------- LEVEL INIT ----------
+// --- INIT LEVEL ---
 function initLevel(n){
-    scene.children.slice().forEach(ch=>{
-        if(ch.type!=='DirectionalLight' && ch.type!=='AmbientLight') scene.remove(ch);
-    });
-
-    N = Math.max(2, Math.min(MAX_ALLOWED_N, Math.floor(n)));
-    const total=N*N*N;
-    const pairCount=Math.floor(total/2);
-    const list=[];
-    for(let i=0;i<pairCount;i++){ list.push(ANIMALS[i%ANIMALS.length],ANIMALS[i%ANIMALS.length]); }
+    scene.children.slice().forEach(ch=>{if(ch.type!=='DirectionalLight'&&ch.type!=='AmbientLight') scene.remove(ch);});
+    N=Math.max(2,Math.min(MAX_ALLOWED_N,Math.floor(n)));
+    const total=N*N*N, pairCount=Math.floor(total/2);
+    const list=[]; for(let i=0;i<pairCount;i++){list.push(ANIMALS[i%ANIMALS.length],ANIMALS[i%ANIMALS.length]);}
     if(total%2===1) list.push(ANIMALS[Math.floor(Math.random()*ANIMALS.length)]);
-    shuffle(list);
-
-    grid=[];
-    let idx=0;
-    for(let x=0;x<N;x++){ grid[x]=[]; for(let y=0;y<N;y++){ grid[x][y]=[]; for(let z=0;z<N;z++){ grid[x][y][z]={animal:list[idx++]||ANIMALS[0],matched:false,mesh:null}; } } }
-
+    shuffle(list); grid=[]; let idx=0;
+    for(let x=0;x<N;x++){grid[x]=[]; for(let y=0;y<N;y++){grid[x][y]=[]; for(let z=0;z<N;z++){grid[x][y][z]={animal:list[idx++]||ANIMALS[0],matched:false,mesh:null};}}}
     const minDim=Math.min(innerWidth,innerHeight)*0.85;
-    cellSize=Math.max(0.8, Math.min(1.5,(minDim/(N*60))*2.2));
+    cellSize=Math.max(0.8,Math.min(1.5,(minDim/(N*60))*2.2));
     score=0; moves=0; matches=0; remainingPairs=Math.floor(total/2); selected=null;
-    createAllMeshes();
-
-    distance=Math.max(6,N*cellSize*1.6);
-    updateCamera();
-    hudLevel.textContent=`${N}x${N}x${N}`;
-    hudScore.textContent=score;
-    hudMoves.textContent=moves;
-    hudMatches.textContent=matches;
-    hudRemaining.textContent=remainingPairs;
-    topHUD.style.display='flex';
-    startScreen.style.display='none';
-
-    if(N>MAX_SAFE_N){ alert(`Uyarı: Seviye n=${N} büyük ve tarayıcı yavaşlayabilir. Tavsiye: 3..16 arası test edin.`); }
+    createAllMeshes(); distance=Math.max(6,N*cellSize*1.6); updateCamera();
+    hudLevel.textContent=`${N}x${N}x${N}`; hudScore.textContent=score; hudMoves.textContent=moves; hudMatches.textContent=matches; hudRemaining.textContent=remainingPairs;
+    topHUD.style.display='flex'; startScreen.style.display='none';
+    if(N>MAX_SAFE_N){alert(`Uyarı: Seviye n=${N} büyük ve tarayıcı yavaşlayabilir. Tavsiye: 3..16 arası test edin.`);}
 }
 
-// ---------- POINTER & ZOOM HANDLING ----------
-let isPointerDown=false, pointersMap=new Map(), lastMid=null, startDist=null;
-renderer.domElement.addEventListener('pointerdown',e=>{
-    renderer.domElement.setPointerCapture(e.pointerId);
-    pointersMap.set(e.pointerId,e);
-    if(pointersMap.size===1){
-        isPointerDown=true;
-        lastMid={x:e.clientX,y:e.clientY};
-        startDist=null;
-    } else if(pointersMap.size===2){
-        const it=pointersMap.values(); const a=it.next().value, b=it.next().value;
-        lastMid={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};
-        startDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+// --- ANIMATION LOOP ---
+function animate(){requestAnimationFrame(animate);renderer.render(scene,camera);}
+animate();
+
+// --- POINTER & ZOOM ---
+let isPointerDown=false, pointers=new Map(), lastMid=null, startDist=null;
+renderer.domElement.addEventListener('pointerdown',e=>{renderer.domElement.setPointerCapture(e.pointerId);pointers.set(e.pointerId,e);if(pointers.size===1){isPointerDown=true;lastMid={x:e.clientX,y:e.clientY};startDist=null;}else if(pointers.size===2){const it=pointers.values(); const a=it.next().value, b=it.next().value; lastMid={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2}; startDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);}});
+renderer.domElement.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId)) return;pointers.set(e.pointerId,e);if(pointers.size===1 && isPointerDown && startDist===null){const cur=e, dx=cur.clientX-lastMid.x, dy=cur.clientY-lastMid.y; rotY+=dx*0.18; rotX+=dy*0.18; rotX=Math.max(-85,Math.min(85,rotX)); lastMid={x:cur.clientX,y:cur.clientY}; updateCamera();}else if(pointers.size===2){const it=pointers.values(); const a=it.next().value, b=it.next().value; const curMid={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2}; const curDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY); if(startDist===null){startDist=curDist;}else{distance+=(startDist-curDist)*0.06; distance=Math.max(4,Math.min(120,distance)); updateCamera(); startDist=curDist;} lastMid=curMid;}});
+renderer.domElement.addEventListener('pointerup',e=>{pointers.delete(e.pointerId); renderer.domElement.releasePointerCapture(e.pointerId); if(pointers.size===0){isPointerDown=false; startDist=null;}});
+window.addEventListener('wheel',e=>{distance+=e.deltaY*0.02; distance=Math.max(4,Math.min(120,distance)); updateCamera();},{passive:true});
+
+// --- PICKING & GAME ---
+const raycaster=new THREE.Raycaster(), pointer2=new THREE.Vector2();
+function pickIntersect(x,y){const rect=renderer.domElement.getBoundingClientRect();pointer2.x=((x-rect.left)/rect.width)*2-1; pointer2.y=-((y-rect.top)/rect.height)*2+1; raycaster.setFromCamera(pointer2,camera); const inter=raycaster.intersectObjects(surfaceMeshes,false); return inter.length?inter[0].object:null;}
+
+function handleClickCell(x,y,z){
+    const cell=grid[x][y][z]; if(!cell||cell.matched) return;
+    if(!selected){selected={x,y,z,animal:cell.animal,mesh:cell.mesh}; cell.mesh.material.forEach(m=>m.emissive&&m.emissive.setHex(0x444400)); return;}
+    moves++; hudMoves.textContent=moves;
+    if(selected.animal===cell.animal){
+        matches++; score+=50; remainingPairs=Math.max(0,remainingPairs-1);
+        hudMatches.textContent=matches; hudScore.textContent=score; hudRemaining.textContent=remainingPairs;
+        removeCell(selected.x,selected.y,selected.z); removeCell(x,y,z); revealNeighbors(selected.x,selected.y,selected.z); revealNeighbors(x,y,z);
+    } else {
+        // wrong
+        selected.mesh.material.forEach(m=>m.emissive&&m.emissive.setHex(0x000000));
     }
-});
-
-renderer.domElement.addEventListener('pointermove',e=>{
-    if(!pointersMap.has(e.pointerId)) return;
-    pointersMap.set(e.pointerId,e);
-    if(pointersMap.size===1 && isPointerDown && startDist===null){
-        const cur=e; const dx=cur.clientX-lastMid.x, dy=cur.clientY-lastMid.y;
-        rotY+=dx*0.18; rotX+=dy*0.18; rotX=Math.max(-85,Math.min(85,rotX));
-        lastMid={x:cur.clientX,y:cur.clientY};
-        updateCamera();
-    } else if(pointersMap.size===2){
-        const it=pointersMap.values(); const a=it.next().value, b=it.next().value;
-        const curMid={x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};
-        const curDist=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
-        if(startDist===null){ startDist=curDist; } else { distance+= (startDist-curDist)*0.06; distance=Math.max(4,Math.min(120,distance)); updateCamera(); startDist=curDist; }
-        lastMid=curMid;
-    }
-});
-
-renderer.domElement.addEventListener('pointerup',e=>{
-    pointersMap.delete(e.pointerId);
-    renderer.domElement.releasePointerCapture(e.pointerId);
-    if(pointersMap.size===0){ isPointerDown=false; startDist=null; }
-});
-
-window.addEventListener('wheel',e=>{
-    distance+=e.deltaY*0.02; distance=Math.max(4,Math.min(120,distance)); updateCamera();
-},{passive:true});
-
-// ---------- PICKING & GAMEPLAY ----------
-function pickIntersect(clientX,clientY){
-    const rect=renderer.domElement.getBoundingClientRect();
-    pointer.x=((clientX-rect.left)/rect.width)*2-1;
-    pointer.y=-((clientY-rect.top)/rect.height)*2+1;
-    raycaster.setFromCamera(pointer,camera);
-    const inter=raycaster.intersectObjects(surfaceMeshes,false);
-    return inter.length?inter[0].object:null;
+    selected=null;
 }
 
+// --- CLICK HANDLER ---
 renderer.domElement.addEventListener('click',e=>{
-    const m=pickIntersect(e.clientX,e.clientY); if(!m) return;
-    const p=m.userData.pos;
-    handleClickCell(p.x,p.y,p.z);
-});
+    const m=pickIntersect(e.clientX,e.clientY); if(!m)
