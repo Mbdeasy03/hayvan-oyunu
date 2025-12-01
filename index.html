@@ -1,9 +1,9 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Ocean Explorer - Okyanus Macerası</title>
+    <title>3D Ocean Explorer - Gerçekçi Okyanus</title>
     <style>
         * {
             margin: 0;
@@ -79,10 +79,11 @@
             left: 20px;
             z-index: 10;
             color: white;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 15px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .fish-selector {
@@ -91,37 +92,47 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 10px;
+            gap: 15px;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 15px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .fish-btn {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             border: 3px solid transparent;
             background: rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
             cursor: pointer;
             transition: all 0.3s;
+            overflow: hidden;
+        }
+
+        .fish-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .fish-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.15);
             border-color: #00b4db;
+            box-shadow: 0 0 20px rgba(0, 180, 219, 0.8);
         }
 
         .fish-btn.active {
             border-color: #00ff88;
             background: rgba(0, 255, 136, 0.2);
-            box-shadow: 0 0 20px #00ff88;
+            box-shadow: 0 0 25px #00ff88;
+            transform: scale(1.1);
         }
 
         #controls {
@@ -130,10 +141,11 @@
             right: 20px;
             z-index: 10;
             color: white;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             padding: 15px;
             border-radius: 15px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .control-info {
@@ -157,8 +169,50 @@
             font-size: 1.5rem;
         }
 
+        .load-bar {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .load-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #00b4db, #0083b0);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
         canvas {
             display: block;
+        }
+
+        #depth {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fish-name-tag {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            white-space: nowrap;
+            display: none;
+            z-index: 5;
         }
     </style>
 </head>
@@ -166,28 +220,43 @@
     <!-- YÜKLEME EKRANI -->
     <div id="loading">
         <div style="text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 20px;">🌊</div>
-            <div>Okyanus yükleniyor...</div>
-            <div id="loadProgress" style="margin-top: 10px; color: #00b4db;">%0</div>
+            <div style="font-size: 3rem; margin-bottom: 20px; animation: float 2s infinite;">🌊</div>
+            <div>Gerçekçi Okyanus Yükleniyor...</div>
+            <div id="loadText" style="margin-top: 10px; color: #00b4db;">Assets hazırlanıyor...</div>
+            <div class="load-bar">
+                <div class="load-progress" id="loadProgress"></div>
+            </div>
         </div>
     </div>
 
     <!-- BAŞLANGIÇ EKRANI -->
     <div id="startScreen">
-        <h1 class="title">🌊 3D OCEAN EXPLORER</h1>
-        <p class="subtitle">Derin okyanusun gizemli dünyasını keşfet! 10 farklı deniz canlısı arasından seçim yap ve okyanusta özgürce yüz!</p>
-        <button class="start-button" id="startButton">OKYANUSA DAL</button>
+        <h1 class="title">🌊 3D REALISTIC OCEAN</h1>
+        <p class="subtitle">Foto-realistik okyanus dünyasını keşfet! Gerçek balık modelleri ve profesyonel su efekti ile unutulmaz bir dalış deneyimi.</p>
+        <button class="start-button" id="startButton">DERİNLİKLERE DAL</button>
         <div style="margin-top: 30px; color: #66fcf1; font-size: 0.9rem;">
-            <p>🎮 Kontroller: Dokunmatik/Tıklama ile balığı yönlendir | Balık seçmek için aşağıdaki butonları kullan</p>
+            <p>🎮 Kontroller: Tıklayarak balığı yönlendir | Fare ile kamera kontrolü | Balık değiştirmek için alttaki fotoğrafları kullan</p>
         </div>
     </div>
 
     <!-- OYUN EKRANI -->
     <div id="gameScreen">
         <div id="ui">
-            <h2>🦈 Okyanus Macerası</h2>
-            <div id="fishInfo">Seçili Balık: <span id="currentFish">Yunus</span></div>
-            <div id="positionInfo">Konum: <span id="currentPos">0, 0, 0</span></div>
+            <h2 style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5rem;">🐠</span>
+                <span>Okyanus Keşif Modu</span>
+            </h2>
+            <div style="margin-top: 10px;">
+                <div id="fishInfo">Seçili: <span id="currentFish" style="color: #00ff88; font-weight: bold;">Yunus</span></div>
+                <div id="positionInfo" style="font-size: 0.9rem; color: #a8e6cf;">Derinlik: <span id="currentDepth">5m</span></div>
+            </div>
+        </div>
+
+        <div id="depth">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.2rem;">📏</span>
+                <span>Derinlik: <span id="depthValue" style="color: #00b4db; font-weight: bold;">5m</span></span>
+            </div>
         </div>
 
         <div class="fish-selector" id="fishSelector">
@@ -195,20 +264,28 @@
         </div>
 
         <div id="controls">
-            <h3>🎮 Kontroller</h3>
-            <div class="control-info">• Dokun/Tıkla: Balığı hareket ettir</div>
-            <div class="control-info">• Fareyi sürükle: Kamera döndür</div>
-            <div class="control-info">• Fare tekerleği: Zoom</div>
-            <button onclick="backToMenu()" style="margin-top: 10px; padding: 8px 15px; background: #ff6b6b; border: none; border-radius: 8px; color: white; cursor: pointer;">Menü</button>
+            <h3 style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <span>🎮</span>
+                <span>Kontroller</span>
+            </h3>
+            <div class="control-info">• Tıklama: Balığı hareket ettir</div>
+            <div class="control-info">• Fare sürükle: Kamera döndür</div>
+            <div class="control-info">• Fare tekerleği: Zoom yap</div>
+            <div class="control-info">• W/A/S/D: Kamera hareketi</div>
+            <button onclick="backToMenu()" style="margin-top: 15px; padding: 8px 15px; background: linear-gradient(45deg, #ff6b6b, #ff4757); border: none; border-radius: 8px; color: white; cursor: pointer; width: 100%;">Menüye Dön</button>
         </div>
+        
+        <div id="fishNameTag" class="fish-name-tag"></div>
     </div>
 
     <!-- Three.js Script -->
     <script type="module">
         import * as THREE from 'https://esm.run/three';
         import { OrbitControls } from 'https://esm.run/three/examples/jsm/controls/OrbitControls.js';
+        import { Water } from 'https://esm.run/three/examples/jsm/objects/Water.js';
+        import { Sky } from 'https://esm.run/three/examples/jsm/objects/Sky.js';
 
-        console.log("🌊 3D OCEAN EXPLORER YÜKLENİYOR...");
+        console.log("🌊 GERÇEKÇİ OKYANUS YÜKLENİYOR...");
 
         // DOM ELEMENTLERİ
         const loadingScreen = document.getElementById('loading');
@@ -216,65 +293,161 @@
         const gameScreen = document.getElementById('gameScreen');
         const startButton = document.getElementById('startButton');
         const loadProgress = document.getElementById('loadProgress');
+        const loadText = document.getElementById('loadText');
         const currentFish = document.getElementById('currentFish');
-        const currentPos = document.getElementById('currentPos');
+        const currentDepth = document.getElementById('currentDepth');
+        const depthValue = document.getElementById('depthValue');
         const fishSelector = document.getElementById('fishSelector');
+        const fishNameTag = document.getElementById('fishNameTag');
 
-        // DENİZ CANLILARI
-        const MARINE_LIFE = [
-            { emoji: '🐬', name: 'Yunus', color: 0x66ccff, speed: 2.5, size: 1.2 },
-            { emoji: '🦈', name: 'Köpekbalığı', color: 0x888888, speed: 3.0, size: 1.5 },
-            { emoji: '🐠', name: 'Balık', color: 0xff6666, speed: 1.8, size: 0.8 },
-            { emoji: '🐡', name: 'Balon Balığı', color: 0xffff66, speed: 1.2, size: 0.9 },
-            { emoji: '🦑', name: 'Mürekkepbalığı', color: 0x9933ff, speed: 2.0, size: 1.0 },
-            { emoji: '🐙', name: 'Ahtapot', color: 0xff3366, speed: 1.5, size: 1.1 },
-            { emoji: '🐢', name: 'Deniz Kaplumbağası', color: 0x66ff99, speed: 1.0, size: 1.3 },
-            { emoji: '🦀', name: 'Yengeç', color: 0xff3333, speed: 0.8, size: 0.7 },
-            { emoji: '🦐', name: 'Karides', color: 0xff9966, speed: 1.3, size: 0.5 },
-            { emoji: '🐋', name: 'Balina', color: 0x6699ff, speed: 1.7, size: 2.0 }
+        // GERÇEK BALIK GÖRSELLERİ (Public Domain/Free to use images)
+        const FISH_TEXTURES = [
+            { 
+                name: 'Yunus', 
+                url: 'https://images.unsplash.com/photo-1570481662006-a3a1374699f8?w=400&h=400&fit=crop&crop=face',
+                scale: 0.8,
+                speed: 2.5
+            },
+            { 
+                name: 'Köpekbalığı', 
+                url: 'https://images.unsplash.com/photo-1560279966-8ff2f6c7a2d1?w=400&h=400&fit=crop&crop=face',
+                scale: 1.0,
+                speed: 3.0
+            },
+            { 
+                name: 'Palyaço Balığı', 
+                url: 'https://images.unsplash.com/photo-1559718062-3611547c7249?w=400&h=400&fit=crop',
+                scale: 0.4,
+                speed: 1.8
+            },
+            { 
+                name: 'Vatoz', 
+                url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
+                scale: 0.7,
+                speed: 1.5
+            },
+            { 
+                name: 'Melek Balığı', 
+                url: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=400&h=400&fit=crop',
+                scale: 0.5,
+                speed: 1.6
+            },
+            { 
+                name: 'Aslan Balığı', 
+                url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
+                scale: 0.6,
+                speed: 1.7
+            },
+            { 
+                name: 'Müren Balığı', 
+                url: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=400&fit=crop',
+                scale: 0.9,
+                speed: 1.4
+            },
+            { 
+                name: 'Tang Balığı', 
+                url: 'https://images.unsplash.com/photo-1559827291-72ee739d0d9a?w=400&h=400&fit=crop',
+                scale: 0.5,
+                speed: 2.0
+            },
+            { 
+                name: 'Çekiç Kafa Köpekbalığı', 
+                url: 'https://images.unsplash.com/photo-1560279966-8ff2f6c7a2d1?w=400&h=300&fit=crop',
+                scale: 1.1,
+                speed: 2.8
+            },
+            { 
+                name: 'Orkinos', 
+                url: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=400&h=400&fit=crop',
+                scale: 0.9,
+                speed: 3.2
+            }
         ];
 
         // THREE.JS AYARLARI
-        let scene, camera, renderer, controls;
-        let ocean, fishGroup, seaweedGroup, bubblesGroup;
+        let scene, camera, renderer, controls, water, sky, sun;
+        let fishGroup, coralGroup, seaweedGroup, rockGroup, particleGroup;
         let playerFish = null;
         let selectedFishIndex = 0;
         let mouse = new THREE.Vector2();
         let raycaster = new THREE.Raycaster();
         let targetPosition = new THREE.Vector3(0, 0, 0);
         let isMoving = false;
+        let clock = new THREE.Clock();
+        let waterUniforms;
+        let fishTextures = [];
+        let assetsLoaded = 0;
+        let totalAssets = FISH_TEXTURES.length + 10; // Balık + diğer assetler
 
         // YÜKLEME İLERLEMESİ
-        let loadCounter = 0;
-        const totalLoadSteps = 10;
-
-        function updateLoadProgress(step) {
-            loadCounter = step;
-            const percent = Math.floor((loadCounter / totalLoadSteps) * 100);
-            loadProgress.textContent = `%${percent}`;
+        function updateLoadProgress(text, percent) {
+            loadText.textContent = text;
+            loadProgress.style.width = `${percent}%`;
         }
 
         // BALIK SEÇİCİ BUTONLARI OLUŞTUR
-        function createFishButtons() {
-            MARINE_LIFE.forEach((fish, index) => {
-                const button = document.createElement('div');
-                button.className = 'fish-btn';
-                if (index === 0) button.classList.add('active');
-                button.innerHTML = fish.emoji;
-                button.title = fish.name;
+        async function createFishButtons() {
+            updateLoadProgress("Balık görselleri yükleniyor...", 10);
+            
+            for (let i = 0; i < FISH_TEXTURES.length; i++) {
+                const fish = FISH_TEXTURES[i];
                 
-                button.addEventListener('click', () => {
-                    selectFish(index);
-                });
-                
-                fishSelector.appendChild(button);
-            });
+                try {
+                    // Balık görselini yükle
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => {
+                            const button = document.createElement('div');
+                            button.className = 'fish-btn';
+                            if (i === 0) button.classList.add('active');
+                            button.title = fish.name;
+                            
+                            button.innerHTML = `<img src="${fish.url}" alt="${fish.name}" loading="lazy">`;
+                            
+                            button.addEventListener('click', () => {
+                                selectFish(i);
+                            });
+                            
+                            fishSelector.appendChild(button);
+                            
+                            assetsLoaded++;
+                            const percent = Math.min(95, (assetsLoaded / totalAssets) * 100);
+                            updateLoadProgress(`${fish.name} yüklendi...`, percent);
+                            resolve();
+                        };
+                        
+                        img.onerror = () => {
+                            console.warn(`${fish.name} görseli yüklenemedi, fallback kullanılıyor.`);
+                            // Fallback buton
+                            const button = document.createElement('div');
+                            button.className = 'fish-btn';
+                            if (i === 0) button.classList.add('active');
+                            button.title = fish.name;
+                            button.innerHTML = `🐠`;
+                            
+                            button.addEventListener('click', () => {
+                                selectFish(i);
+                            });
+                            
+                            fishSelector.appendChild(button);
+                            resolve();
+                        };
+                        
+                        img.src = fish.url;
+                    });
+                    
+                } catch (error) {
+                    console.error(`Balık ${i} yükleme hatası:`, error);
+                }
+            }
         }
 
         // BALIK SEÇ
         function selectFish(index) {
             selectedFishIndex = index;
-            const fish = MARINE_LIFE[index];
+            const fish = FISH_TEXTURES[index];
             
             // Buton aktifliğini güncelle
             document.querySelectorAll('.fish-btn').forEach((btn, i) => {
@@ -285,36 +458,39 @@
             currentFish.textContent = fish.name;
             
             // Oyuncu balığını güncelle
-            if (playerFish) {
-                // Renk ve boyut güncelle
-                playerFish.children[0].material.color.setHex(fish.color);
-                playerFish.scale.setScalar(fish.size);
+            if (playerFish && fishTextures[index]) {
+                playerFish.material.map = fishTextures[index];
+                playerFish.material.needsUpdate = true;
+                playerFish.userData.speed = fish.speed;
+                playerFish.scale.setScalar(fish.scale);
             }
         }
 
         // THREE.JS SAHNESİNİ OLUŞTUR
-        function initThreeJS() {
-            updateLoadProgress(1);
+        async function initThreeJS() {
+            updateLoadProgress("3D sahne oluşturuluyor...", 20);
             
             // SAHNE
             scene = new THREE.Scene();
-            scene.fog = new THREE.Fog(0x000044, 10, 200);
-            updateLoadProgress(2);
-
+            scene.fog = new THREE.FogExp2(0x000044, 0.01);
+            
             // KAMERA
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 10, 20);
-            updateLoadProgress(3);
-
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 10, 30);
+            
             // RENDERER
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true
+            });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(0x000044);
+            renderer.setClearColor(0x000022);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 0.8;
             gameScreen.appendChild(renderer.domElement);
-            updateLoadProgress(4);
-
+            
             // KONTROLLER
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
@@ -322,192 +498,409 @@
             controls.maxPolarAngle = Math.PI / 2;
             controls.minDistance = 5;
             controls.maxDistance = 100;
-            updateLoadProgress(5);
+            controls.enablePan = false;
+            
+            updateLoadProgress("Işıklandırma ekleniyor...", 30);
+            
+            // GÖKYÜZÜ VE GÜNEŞ
+            sky = new Sky();
+            sky.scale.setScalar(1000);
+            scene.add(sky);
 
+            sun = new THREE.Vector3();
+            const skyUniforms = sky.material.uniforms;
+            skyUniforms['turbidity'].value = 10;
+            skyUniforms['rayleigh'].value = 2;
+            skyUniforms['mieCoefficient'].value = 0.005;
+            skyUniforms['mieDirectionalG'].value = 0.8;
+            
+            const phi = THREE.MathUtils.degToRad(90);
+            const theta = THREE.MathUtils.degToRad(180);
+            sun.setFromSphericalCoords(1, phi, theta);
+            skyUniforms['sunPosition'].value.copy(sun);
+            
             // IŞIKLAR
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
             scene.add(ambientLight);
 
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(10, 20, 5);
+            directionalLight.position.copy(sun);
             directionalLight.castShadow = true;
             directionalLight.shadow.mapSize.width = 2048;
             directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 500;
+            directionalLight.shadow.camera.left = -100;
+            directionalLight.shadow.camera.right = 100;
+            directionalLight.shadow.camera.top = 100;
+            directionalLight.shadow.camera.bottom = -100;
             scene.add(directionalLight);
 
-            const underwaterLight = new THREE.PointLight(0x0066ff, 1, 50);
-            underwaterLight.position.set(0, 5, 0);
+            const underwaterLight = new THREE.PointLight(0x0066ff, 0.5, 100);
+            underwaterLight.position.set(0, 20, 0);
             scene.add(underwaterLight);
-            updateLoadProgress(6);
-
+            
+            updateLoadProgress("Su yüzeyi oluşturuluyor...", 40);
+            
+            // SU YÜZEYİ
+            const waterGeometry = new THREE.PlaneGeometry(1000, 1000);
+            water = new Water(waterGeometry, {
+                textureWidth: 512,
+                textureHeight: 512,
+                waterNormals: new THREE.TextureLoader().load('https://threejs.org/examples/textures/waternormals.jpg', function(texture) {
+                    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+                }),
+                sunDirection: new THREE.Vector3(),
+                sunColor: 0xffffff,
+                waterColor: 0x001e0f,
+                distortionScale: 3.7,
+                fog: scene.fog !== undefined
+            });
+            water.rotation.x = -Math.PI / 2;
+            water.position.y = 25; // Su yüzeyi yüksekliği
+            scene.add(water);
+            waterUniforms = water.material.uniforms;
+            waterUniforms['size'].value = 10;
+            
+            updateLoadProgress("Okyanus zemini hazırlanıyor...", 50);
+            
             // OKYANUS ZEMİNİ
-            const oceanGeometry = new THREE.PlaneGeometry(200, 200, 100, 100);
-            const oceanMaterial = new THREE.MeshLambertMaterial({ 
-                color: 0x004488,
-                transparent: true,
-                opacity: 0.8
+            const oceanFloorGeometry = new THREE.PlaneGeometry(1000, 1000, 100, 100);
+            const oceanFloorMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0x004466,
+                side: THREE.DoubleSide
             });
-            ocean = new THREE.Mesh(oceanGeometry, oceanMaterial);
-            ocean.rotation.x = -Math.PI / 2;
-            ocean.receiveShadow = true;
-            scene.add(ocean);
-            updateLoadProgress(7);
-
-            // DENİZ YOSUNLARI
-            seaweedGroup = new THREE.Group();
-            const seaweedColors = [0x006600, 0x008800, 0x00aa00];
+            const oceanFloor = new THREE.Mesh(oceanFloorGeometry, oceanFloorMaterial);
+            oceanFloor.rotation.x = -Math.PI / 2;
+            oceanFloor.position.y = -50;
+            oceanFloor.receiveShadow = true;
+            scene.add(oceanFloor);
             
-            for (let i = 0; i < 50; i++) {
-                const height = Math.random() * 3 + 1;
-                const radius = 0.1;
-                const segments = 8;
-                
-                const seaweedGeometry = new THREE.ConeGeometry(radius, height, segments);
-                const seaweedMaterial = new THREE.MeshLambertMaterial({ 
-                    color: seaweedColors[Math.floor(Math.random() * seaweedColors.length)],
-                    transparent: true,
-                    opacity: 0.9
-                });
-                
-                const seaweed = new THREE.Mesh(seaweedGeometry, seaweedMaterial);
-                seaweed.position.set(
-                    (Math.random() - 0.5) * 180,
-                    height / 2,
-                    (Math.random() - 0.5) * 180
-                );
-                seaweed.rotation.x = Math.PI;
-                seaweedGroup.add(seaweed);
-            }
-            scene.add(seaweedGroup);
-            updateLoadProgress(8);
-
-            // KABARCIKLAR
-            bubblesGroup = new THREE.Group();
-            const bubbleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-            const bubbleMaterial = new THREE.MeshBasicMaterial({ 
-                color: 0xffffff,
+            // ZEMİN DETAYLARI
+            const sandGeometry = new THREE.PlaneGeometry(1000, 1000, 200, 200);
+            const sandMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0xc2b280,
                 transparent: true,
-                opacity: 0.5
+                opacity: 0.7
             });
+            const sand = new THREE.Mesh(sandGeometry, sandMaterial);
+            sand.rotation.x = -Math.PI / 2;
+            sand.position.y = -49.5;
+            sand.receiveShadow = true;
+            scene.add(sand);
             
-            for (let i = 0; i < 100; i++) {
-                const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
-                bubble.position.set(
-                    (Math.random() - 0.5) * 200,
-                    Math.random() * 20,
-                    (Math.random() - 0.5) * 200
-                );
-                bubble.userData.speed = Math.random() * 0.02 + 0.01;
-                bubble.userData.initialY = bubble.position.y;
-                bubblesGroup.add(bubble);
-            }
-            scene.add(bubblesGroup);
-            updateLoadProgress(9);
-
-            // DENİZ CANLILARI GRUBU
+            updateLoadProgress("Deniz canlıları yükleniyor...", 60);
+            
+            // DENİZ CANLILARI GRUPLARI
             fishGroup = new THREE.Group();
+            coralGroup = new THREE.Group();
+            seaweedGroup = new THREE.Group();
+            rockGroup = new THREE.Group();
+            particleGroup = new THREE.Group();
+            
             scene.add(fishGroup);
-
-            // RASTGELE BALIKLAR OLUŞTUR
-            createRandomFish(20);
+            scene.add(coralGroup);
+            scene.add(seaweedGroup);
+            scene.add(rockGroup);
+            scene.add(particleGroup);
+            
+            updateLoadProgress("Balık görselleri işleniyor...", 70);
+            
+            // BALIK TEKSTÜRLERİNİ YÜKLE
+            await loadFishTextures();
+            
+            updateLoadProgress("Çevre objeleri oluşturuluyor...", 80);
+            
+            // ÇEVRE OBJELERİ
+            createCorals(50);
+            createSeaweed(100);
+            createRocks(30);
+            createParticles(200);
+            
+            // RASTGELE BALIKLAR
+            createRandomFish(25);
+            
+            updateLoadProgress("Oyuncu balığı oluşturuluyor...", 90);
             
             // OYUNCU BALIĞI
             createPlayerFish();
             
-            updateLoadProgress(10);
+            updateLoadProgress("Oyun hazırlanıyor...", 95);
+        }
+
+        // BALIK TEKSTÜRLERİNİ YÜKLE
+        async function loadFishTextures() {
+            const textureLoader = new THREE.TextureLoader();
+            
+            for (let i = 0; i < FISH_TEXTURES.length; i++) {
+                const fish = FISH_TEXTURES[i];
+                
+                try {
+                    const texture = await new Promise((resolve, reject) => {
+                        textureLoader.load(
+                            fish.url,
+                            resolve,
+                            undefined,
+                            () => {
+                                // Fallback texture
+                                const canvas = document.createElement('canvas');
+                                canvas.width = 256;
+                                canvas.height = 256;
+                                const ctx = canvas.getContext('2d');
+                                ctx.fillStyle = i % 2 === 0 ? '#3498db' : '#e74c3c';
+                                ctx.fillRect(0, 0, 256, 256);
+                                ctx.fillStyle = 'white';
+                                ctx.font = '100px Arial';
+                                ctx.fillText('🐠', 80, 160);
+                                resolve(new THREE.CanvasTexture(canvas));
+                            }
+                        );
+                    });
+                    
+                    texture.wrapS = THREE.RepeatWrapping;
+                    texture.wrapT = THREE.RepeatWrapping;
+                    fishTextures.push(texture);
+                    
+                } catch (error) {
+                    console.error(`Texture ${i} yükleme hatası:`, error);
+                }
+            }
+        }
+
+        // MERCANLAR OLUŞTUR
+        function createCorals(count) {
+            const coralColors = [0xff6b6b, 0xff9ff3, 0xfeca57, 0x48dbfb, 0x1dd1a1];
+            
+            for (let i = 0; i < count; i++) {
+                const coralType = Math.floor(Math.random() * 3);
+                let coral;
+                
+                if (coralType === 0) {
+                    // Küçük mercan
+                    coral = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.5, 2, 8),
+                        new THREE.MeshLambertMaterial({ 
+                            color: coralColors[Math.floor(Math.random() * coralColors.length)],
+                            transparent: true,
+                            opacity: 0.9
+                        })
+                    );
+                } else if (coralType === 1) {
+                    // Büyük mercan
+                    coral = new THREE.Mesh(
+                        new THREE.SphereGeometry(1, 8, 6),
+                        new THREE.MeshLambertMaterial({ 
+                            color: coralColors[Math.floor(Math.random() * coralColors.length)],
+                            transparent: true,
+                            opacity: 0.8
+                        })
+                    );
+                } else {
+                    // Dal mercanı
+                    coral = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.2, 0.5, 3, 6),
+                        new THREE.MeshLambertMaterial({ 
+                            color: coralColors[Math.floor(Math.random() * coralColors.length)],
+                            transparent: true,
+                            opacity: 0.9
+                        })
+                    );
+                }
+                
+                coral.castShadow = true;
+                coral.receiveShadow = true;
+                coral.position.set(
+                    (Math.random() - 0.5) * 900,
+                    -45 + Math.random() * 5,
+                    (Math.random() - 0.5) * 900
+                );
+                coral.rotation.y = Math.random() * Math.PI * 2;
+                coral.scale.setScalar(0.5 + Math.random() * 1.5);
+                
+                coralGroup.add(coral);
+            }
+        }
+
+        // DENİZ YOSUNU OLUŞTUR
+        function createSeaweed(count) {
+            const seaweedColors = [0x27ae60, 0x2ecc71, 0x1abc9c];
+            
+            for (let i = 0; i < count; i++) {
+                const height = 1 + Math.random() * 4;
+                const seaweed = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.1, height, 8),
+                    new THREE.MeshLambertMaterial({ 
+                        color: seaweedColors[Math.floor(Math.random() * seaweedColors.length)],
+                        transparent: true,
+                        opacity: 0.8
+                    })
+                );
+                
+                seaweed.position.set(
+                    (Math.random() - 0.5) * 900,
+                    -45,
+                    (Math.random() - 0.5) * 900
+                );
+                seaweed.userData = {
+                    initialHeight: height,
+                    speed: 0.5 + Math.random() * 1,
+                    offset: Math.random() * Math.PI * 2
+                };
+                
+                seaweedGroup.add(seaweed);
+            }
+        }
+
+        // KAYALIKLAR OLUŞTUR
+        function createRocks(count) {
+            for (let i = 0; i < count; i++) {
+                const size = 1 + Math.random() * 3;
+                const rock = new THREE.Mesh(
+                    new THREE.DodecahedronGeometry(size, 1),
+                    new THREE.MeshLambertMaterial({ 
+                        color: 0x666666,
+                        flatShading: true
+                    })
+                );
+                
+                rock.castShadow = true;
+                rock.receiveShadow = true;
+                rock.position.set(
+                    (Math.random() - 0.5) * 900,
+                    -45 + size / 2,
+                    (Math.random() - 0.5) * 900
+                );
+                rock.rotation.set(
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI,
+                    Math.random() * Math.PI
+                );
+                
+                rockGroup.add(rock);
+            }
+        }
+
+        // PARÇACIKLAR OLUŞTUR (su partikülleri)
+        function createParticles(count) {
+            const particleGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+            
+            for (let i = 0; i < count; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 1000;
+                positions[i * 3 + 1] = Math.random() * 50 - 50;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 1000;
+                
+                // Mavi tonlarında renkler
+                colors[i * 3] = 0.2 + Math.random() * 0.3;     // R
+                colors[i * 3 + 1] = 0.5 + Math.random() * 0.3; // G
+                colors[i * 3 + 2] = 0.8 + Math.random() * 0.2; // B
+            }
+            
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.5,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6
+            });
+            
+            const particles = new THREE.Points(particleGeometry, particleMaterial);
+            particleGroup.add(particles);
         }
 
         // RASTGELE BALIKLAR OLUŞTUR
         function createRandomFish(count) {
             for (let i = 0; i < count; i++) {
-                const fishType = MARINE_LIFE[Math.floor(Math.random() * MARINE_LIFE.length)];
-                createFish(fishType, true);
-            }
-        }
-
-        // BALIK OLUŞTUR
-        function createFish(fishType, isRandom = false) {
-            // Balık gövdesi
-            const bodyGeometry = new THREE.ConeGeometry(0.5, 1.5, 8);
-            bodyGeometry.rotateZ(Math.PI / 2);
-            const bodyMaterial = new THREE.MeshLambertMaterial({ color: fishType.color });
-            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            body.castShadow = true;
-
-            // Balık kuyruğu
-            const tailGeometry = new THREE.ConeGeometry(0.3, 0.8, 8);
-            tailGeometry.rotateZ(-Math.PI / 2);
-            const tailMaterial = new THREE.MeshLambertMaterial({ color: fishType.color });
-            const tail = new THREE.Mesh(tailGeometry, tailMaterial);
-            tail.position.x = -0.8;
-
-            // Balık grubu
-            const fish = new THREE.Group();
-            fish.add(body);
-            fish.add(tail);
-            fish.scale.setScalar(fishType.size);
-
-            if (isRandom) {
-                // Rastgele pozisyon
-                fish.position.set(
-                    (Math.random() - 0.5) * 180,
-                    Math.random() * 10 + 2,
-                    (Math.random() - 0.5) * 180
-                );
+                const fishIndex = Math.floor(Math.random() * FISH_TEXTURES.length);
+                const fishData = FISH_TEXTURES[fishIndex];
                 
-                // Rastgele yön
-                fish.rotation.y = Math.random() * Math.PI * 2;
+                if (!fishTextures[fishIndex]) continue;
+                
+                // Balık sprite'ı
+                const fishMaterial = new THREE.SpriteMaterial({ 
+                    map: fishTextures[fishIndex],
+                    transparent: true,
+                    opacity: 0.9
+                });
+                
+                const fish = new THREE.Sprite(fishMaterial);
+                fish.scale.set(fishData.scale * 5, fishData.scale * 5, 1);
+                
+                // Pozisyon
+                fish.position.set(
+                    (Math.random() - 0.5) * 800,
+                    Math.random() * 40 - 30,
+                    (Math.random() - 0.5) * 800
+                );
                 
                 // Rastgele hareket verileri
                 fish.userData = {
-                    speed: fishType.speed * (0.5 + Math.random() * 0.5),
+                    speed: fishData.speed * (0.3 + Math.random() * 0.7),
                     direction: new THREE.Vector3(
                         Math.random() - 0.5,
-                        Math.random() * 0.2 - 0.1,
+                        Math.random() * 0.4 - 0.2,
                         Math.random() - 0.5
                     ).normalize(),
                     isRandom: true,
-                    type: fishType.name
+                    type: fishData.name,
+                    turnSpeed: 0.02 + Math.random() * 0.03,
+                    bobSpeed: 0.5 + Math.random() * 1,
+                    bobOffset: Math.random() * Math.PI * 2
                 };
                 
                 fishGroup.add(fish);
             }
-
-            return fish;
         }
 
         // OYUNCU BALIĞI OLUŞTUR
         function createPlayerFish() {
-            const fishType = MARINE_LIFE[selectedFishIndex];
-            playerFish = createFish(fishType, false);
+            const fishData = FISH_TEXTURES[selectedFishIndex];
             
-            playerFish.position.set(0, 5, 0);
+            if (!fishTextures[selectedFishIndex]) return;
+            
+            const fishMaterial = new THREE.SpriteMaterial({ 
+                map: fishTextures[selectedFishIndex],
+                transparent: true,
+                opacity: 1
+            });
+            
+            playerFish = new THREE.Sprite(fishMaterial);
+            playerFish.scale.set(fishData.scale * 8, fishData.scale * 8, 1);
+            playerFish.position.set(0, 0, 0);
+            
             playerFish.userData = {
-                speed: fishType.speed,
+                speed: fishData.speed,
                 isPlayer: true,
-                type: fishType.name
+                type: fishData.name,
+                bobSpeed: 0.8,
+                bobAmount: 0.5
             };
             
             scene.add(playerFish);
-            
-            // Kamera hedefini oyuncu balığına ayarla
             controls.target.copy(playerFish.position);
         }
 
-        // FARE/KONUM OLUMLARI
+        // EVENT LISTENER'LAR
         function setupEventListeners() {
-            // TIKLAMA/DOKUNMA
+            // TIKLAMA
             renderer.domElement.addEventListener('click', onMouseClick);
             renderer.domElement.addEventListener('touchstart', onTouchStart);
             
-            // PENCERE BOYUTU DEĞİŞİKLİĞİ
+            // FARE HAREKETİ (balık adı gösterimi)
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            
+            // KLAVYE
+            document.addEventListener('keydown', onKeyDown);
+            
+            // PENCERE BOYUTU
             window.addEventListener('resize', onWindowResize);
             
-            // ESC MENÜ
+            // ESC
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    backToMenu();
-                }
+                if (e.key === 'Escape') backToMenu();
             });
         }
 
@@ -516,13 +909,15 @@
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(ocean);
             
-            if (intersects.length > 0) {
-                targetPosition.copy(intersects[0].point);
-                targetPosition.y = 5; // Balık yüksekliği
-                isMoving = true;
-            }
+            // Okyanus zeminine tıklama
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const targetPoint = new THREE.Vector3();
+            raycaster.ray.intersectPlane(plane, targetPoint);
+            
+            targetPosition.copy(targetPoint);
+            targetPosition.y = Math.max(-30, Math.min(15, targetPoint.y));
+            isMoving = true;
         }
 
         function onTouchStart(event) {
@@ -532,13 +927,51 @@
                 mouse.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
                 
                 raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObject(ocean);
+                const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+                const targetPoint = new THREE.Vector3();
+                raycaster.ray.intersectPlane(plane, targetPoint);
                 
-                if (intersects.length > 0) {
-                    targetPosition.copy(intersects[0].point);
-                    targetPosition.y = 5;
-                    isMoving = true;
-                }
+                targetPosition.copy(targetPoint);
+                targetPosition.y = Math.max(-30, Math.min(15, targetPoint.y));
+                isMoving = true;
+            }
+        }
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(fishGroup.children);
+            
+            if (intersects.length > 0) {
+                const fish = intersects[0].object;
+                fishNameTag.textContent = fish.userData.type || 'Balık';
+                fishNameTag.style.display = 'block';
+                fishNameTag.style.left = `${event.clientX + 10}px`;
+                fishNameTag.style.top = `${event.clientY - 10}px`;
+            } else {
+                fishNameTag.style.display = 'none';
+            }
+        }
+
+        function onKeyDown(event) {
+            const moveSpeed = 10;
+            const delta = clock.getDelta();
+            
+            switch(event.key.toLowerCase()) {
+                case 'w':
+                    camera.position.add(controls.target.clone().sub(camera.position).normalize().multiplyScalar(moveSpeed * delta));
+                    break;
+                case 's':
+                    camera.position.sub(controls.target.clone().sub(camera.position).normalize().multiplyScalar(moveSpeed * delta));
+                    break;
+                case 'a':
+                    camera.position.add(new THREE.Vector3().crossVectors(camera.up, controls.target.clone().sub(camera.position)).normalize().multiplyScalar(moveSpeed * delta));
+                    break;
+                case 'd':
+                    camera.position.sub(new THREE.Vector3().crossVectors(camera.up, controls.target.clone().sub(camera.position)).normalize().multiplyScalar(moveSpeed * delta));
+                    break;
             }
         }
 
@@ -551,8 +984,15 @@
         // ANİMASYON DÖNGÜSÜ
         function animate() {
             requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            const delta = clock.getDelta();
             
-            // KONTROLLERİ GÜNCELLE
+            // SU ANİMASYONU
+            if (waterUniforms) {
+                waterUniforms['time'].value += delta * 0.5;
+            }
+            
+            // KONTROLLER
             controls.update();
             
             // OYUNCU BALIĞI HAREKETİ
@@ -563,72 +1003,76 @@
                 
                 const distance = playerFish.position.distanceTo(targetPosition);
                 
-                if (distance > 0.5) {
-                    playerFish.position.add(
-                        direction.multiplyScalar(playerFish.userData.speed * 0.1)
-                    );
+                if (distance > 1) {
+                    const moveAmount = playerFish.userData.speed * delta * 5;
+                    playerFish.position.add(direction.multiplyScalar(moveAmount));
                     
-                    // Balık yönünü güncelle
-                    playerFish.lookAt(targetPosition);
+                    // Balık yönünü hedefe çevir
+                    const targetRotation = Math.atan2(direction.x, direction.z);
+                    playerFish.rotation.y = targetRotation;
                     
-                    // Konum bilgisini güncelle
-                    currentPos.textContent = 
-                        `${playerFish.position.x.toFixed(1)}, ${playerFish.position.y.toFixed(1)}, ${playerFish.position.z.toFixed(1)}`;
+                    // Derinlik güncelleme
+                    const depth = Math.abs(playerFish.position.y).toFixed(1);
+                    currentDepth.textContent = `${depth}m`;
+                    depthValue.textContent = `${depth}m`;
+                    
+                    // Kamera hedefini takip et
+                    controls.target.lerp(playerFish.position, delta * 3);
                 } else {
                     isMoving = false;
                 }
-                
-                // Kamera hedefini takip et
-                controls.target.copy(playerFish.position);
             }
             
-            // RASTGELE BALIKLARI HAREKET ETTİR
+            // BALIK SALLANMA ANİMASYONU
+            if (playerFish) {
+                const bob = Math.sin(time * playerFish.userData.bobSpeed) * playerFish.userData.bobAmount;
+                playerFish.position.y += bob * delta;
+            }
+            
+            // RASTGELE BALIK HAREKETİ
             fishGroup.children.forEach(fish => {
                 if (fish.userData.isRandom) {
                     // İleri hareket
-                    fish.translateX(fish.userData.speed * 0.05);
+                    fish.translateX(fish.userData.speed * delta);
                     
-                    // Yön değiştirme (rastgele)
+                    // Yön değiştirme
                     if (Math.random() < 0.02) {
                         fish.userData.direction.set(
                             Math.random() - 0.5,
-                            Math.random() * 0.2 - 0.1,
+                            Math.random() * 0.4 - 0.2,
                             Math.random() - 0.5
                         ).normalize();
                     }
                     
                     // Sınır kontrolü
-                    if (Math.abs(fish.position.x) > 90 || 
-                        Math.abs(fish.position.z) > 90) {
+                    if (Math.abs(fish.position.x) > 400 || Math.abs(fish.position.z) > 400) {
                         fish.userData.direction.x *= -1;
                         fish.userData.direction.z *= -1;
                     }
                     
-                    if (fish.position.y < 2 || fish.position.y > 15) {
+                    if (fish.position.y < -40 || fish.position.y > 15) {
                         fish.userData.direction.y *= -1;
                     }
                     
-                    // Balığı döndür
-                    fish.lookAt(
-                        fish.position.x + fish.userData.direction.x,
-                        fish.position.y + fish.userData.direction.y,
-                        fish.position.z + fish.userData.direction.z
-                    );
+                    // Yavaş dönüş
+                    const targetRotation = Math.atan2(fish.userData.direction.x, fish.userData.direction.z);
+                    fish.rotation.y += (targetRotation - fish.rotation.y) * fish.userData.turnSpeed;
+                    
+                    // Sallanma animasyonu
+                    const bob = Math.sin(time * fish.userData.bobSpeed + fish.userData.bobOffset) * 0.2;
+                    fish.position.y += bob * delta;
                 }
             });
             
-            // KABARCIK ANİMASYONU
-            bubblesGroup.children.forEach(bubble => {
-                bubble.position.y += bubble.userData.speed;
-                if (bubble.position.y > bubble.userData.initialY + 20) {
-                    bubble.position.y = bubble.userData.initialY;
-                }
+            // DENİZ YOSUNU ANİMASYONU
+            seaweedGroup.children.forEach(seaweed => {
+                seaweed.rotation.z = Math.sin(time * seaweed.userData.speed + seaweed.userData.offset) * 0.3;
+                seaweed.scale.y = 1 + Math.sin(time * seaweed.userData.speed + seaweed.userData.offset) * 0.2;
             });
             
-            // DENİZ YOSUNU DALGASI
-            const time = Date.now() * 0.001;
-            seaweedGroup.children.forEach((seaweed, i) => {
-                seaweed.rotation.z = Math.sin(time + i) * 0.2;
+            // PARÇACIK HAREKETİ
+            particleGroup.children.forEach(particleSystem => {
+                particleSystem.rotation.y += delta * 0.1;
             });
             
             // RENDER
@@ -636,8 +1080,8 @@
         }
 
         // OYUNU BAŞLAT
-        function startGame() {
-            console.log("🌊 OYUN BAŞLATILIYOR...");
+        async function startGame() {
+            console.log("🌊 GERÇEKÇİ OKYANUS BAŞLATILIYOR...");
             
             // Ekranları değiştir
             startScreen.style.display = 'none';
@@ -645,8 +1089,11 @@
             
             // Yükleme ekranını gizle
             setTimeout(() => {
-                loadingScreen.style.display = 'none';
-            }, 500);
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 300);
             
             // Animasyonu başlat
             animate();
@@ -661,43 +1108,40 @@
         // BUTONLARI BAŞLAT
         function initializeButtons() {
             startButton.addEventListener('click', startGame);
-            
-            // Global fonksiyon
             window.backToMenu = backToMenu;
         }
 
         // SAYFA YÜKLENDİĞİNDE
-        window.addEventListener('load', function() {
-            console.log("✅ Sayfa yüklendi!");
+        window.addEventListener('load', async function() {
+            console.log("✅ Sayfa yüklendi! Oyun hazırlanıyor...");
             
-            // Balık butonlarını oluştur
-            createFishButtons();
-            
-            // Three.js sahnesini oluştur
-            initThreeJS();
-            
-            // Event listener'ları kur
-            setupEventListeners();
-            
-            // Butonları başlat
-            initializeButtons();
-            
-            // Yükleme ekranını gizle
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 500);
-            }, 1500);
-            
-            console.log("🎮 Oyun hazır! 'OKYANUSA DAL' butonuna tıkla!");
+            try {
+                // Balık butonlarını oluştur
+                await createFishButtons();
+                
+                // Three.js sahnesini oluştur
+                await initThreeJS();
+                
+                // Event listener'ları kur
+                setupEventListeners();
+                
+                // Butonları başlat
+                initializeButtons();
+                
+                updateLoadProgress("Oyun hazır! Başlamak için tıklayın...", 100);
+                
+                console.log("🎮 Oyun hazır! 'DERİNLİKLERE DAL' butonuna tıkla!");
+                
+            } catch (error) {
+                console.error("Oyun yükleme hatası:", error);
+                loadText.textContent = "Yükleme hatası! Sayfayı yenileyin.";
+            }
         });
 
         // HATA YAKALAMA
         window.addEventListener('error', function(e) {
             console.error('❌ Hata:', e.error);
-            alert('Bir hata oluştu: ' + e.message);
         });
     </script>
 </body>
-</html>   
+</html>
